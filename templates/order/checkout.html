@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block title %}주문 및 결제 - 대한민국 관광 투어{% endblock %}
+
+{% block content %}
+<div class="container page-content">
+  <div class="page-header">
+    <h1>💳 주문 / <strong>결제 확인</strong></h1>
+    <p>예약 내역과 <strong>회원 할인 혜택</strong>을 확인하신 후 결제를 진행해주세요.</p>
+  </div>
+
+  <div class="checkout-layout">
+    <!-- 결제 품목 목록 -->
+    <div class="checkout-main">
+      <div class="card-section">
+        <h3>1. 예약 상품 확인</h3>
+        <div class="checkout-items">
+          {% for item in items %}
+            <div class="checkout-item-row">
+              <img src="{{ item.product.image_url }}" alt="{{ item.product.name }}" class="checkout-thumb" onerror="this.src='/static/img/default-tour.jpg'">
+              <div class="checkout-info">
+                <h4>{{ item.product.name }}</h4>
+                <span class="text-muted">권역: {{ item.product.region }} | 테마: {{ item.product.theme.name }}</span>
+                <span class="text-muted">수량: {{ item.quantity }}개</span>
+              </div>
+              <div class="checkout-prices">
+                <span class="orig-strike">{{ "{:,}".format(item.subtotal_original) }}원</span>
+                <span class="discount-final">{{ "{:,}".format(item.subtotal_final) }}원</span>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- 예약자 정보 -->
+      <div class="card-section">
+        <h3>2. 예약자 정보</h3>
+        <div class="user-info-grid">
+          <div class="info-row">
+            <span class="label">이름:</span>
+            <span class="val">{{ current_user.name }}</span>
+          </div>
+          <div class="info-row">
+            <span class="label">아이디:</span>
+            <span class="val">{{ current_user.username }}</span>
+          </div>
+          <div class="info-row">
+            <span class="label">이메일:</span>
+            <span class="val">{{ current_user.email }}</span>
+          </div>
+          <div class="info-row">
+            <span class="label">연락처:</span>
+            <span class="val">{{ current_user.phone }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 결제 수단 선택 -->
+      <div class="card-section">
+        <h3>3. 결제 수단 선택</h3>
+        <form id="paymentForm" action="{{ url_for('order.process_payment') }}" method="POST">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          {% if direct_product_id %}
+            <input type="hidden" name="direct_product_id" value="{{ direct_product_id }}">
+            <input type="hidden" name="quantity" value="{{ quantity }}">
+          {% endif %}
+
+          <div class="payment-methods-grid">
+            <label class="pay-method-card">
+              <input type="radio" name="payment_method" value="CARD" checked>
+              <div class="method-box">
+                <span class="method-icon">💳</span>
+                <span class="method-name">신용/체크카드</span>
+              </div>
+            </label>
+
+            <label class="pay-method-card">
+              <input type="radio" name="payment_method" value="EASY_PAY">
+              <div class="method-box">
+                <span class="method-icon">📱</span>
+                <span class="method-name">간편결제 (카카오/네이버페이)</span>
+              </div>
+            </label>
+
+            <label class="pay-method-card">
+              <input type="radio" name="payment_method" value="BANK_TRANSFER">
+              <div class="method-box">
+                <span class="method-icon">🏦</span>
+                <span class="method-name">실시간 계좌이체</span>
+              </div>
+            </label>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- 우측 최종 결제 금액 확인 -->
+    <div class="checkout-sidebar">
+      <div class="receipt-card">
+        <h3>최종 결제 금액</h3>
+
+        <div class="receipt-row">
+          <span>총 정상 상품 금액</span>
+          <span>{{ "{:,}".format(total_original) }}원</span>
+        </div>
+
+        <div class="receipt-row discount">
+          <span>회원 특별 우대 할인</span>
+          <span>- {{ "{:,}".format(total_discount) }}원</span>
+        </div>
+
+        <div class="receipt-divider"></div>
+
+        <div class="receipt-row total">
+          <span>최종 결제 금액</span>
+          <span class="amount">{{ "{:,}".format(total_final) }}원</span>
+        </div>
+
+        <button type="submit" form="paymentForm" class="btn-pay-action">
+          {{ "{:,}".format(total_final) }}원 결제하기
+        </button>
+
+        <p class="terms-notice">
+          위 주문 내용을 확인하였으며, 결제 진행 및 취소/환불 규정에 동의합니다.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+

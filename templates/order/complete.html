@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}결제 완료 - 대한민국 관광 투어{% endblock %}
+
+{% block content %}
+<div class="container page-content">
+  <div class="complete-card">
+    <div class="success-icon-wrap">
+      <span class="success-icon">🎉</span>
+    </div>
+    <h1>결제가 성공적으로 완료되었습니다!</h1>
+    <p class="order-no-text">주문 번호: <strong>{{ order.order_no }}</strong></p>
+
+    <div class="receipt-box">
+      <div class="receipt-row">
+        <span>결제 일시</span>
+        <span>{{ order.payment.paid_at.strftime('%Y-%m-%d %H:%M:%S') }}</span>
+      </div>
+      <div class="receipt-row">
+        <span>결제 수단</span>
+        <span>{{ order.payment.payment_method }}</span>
+      </div>
+      <div class="receipt-row">
+        <span>거래 승인 번호</span>
+        <span>{{ order.payment.transaction_id }}</span>
+      </div>
+      <div class="receipt-row">
+        <span>정상 상품 금액</span>
+        <span>{{ "{:,}".format(order.original_amount) }}원</span>
+      </div>
+      <div class="receipt-row discount">
+        <span>회원 혜택 절약 금액</span>
+        <span>- {{ "{:,}".format(order.discount_amount) }}원</span>
+      </div>
+      <div class="receipt-divider"></div>
+      <div class="receipt-row total">
+        <span>최종 결제 금액</span>
+        <span class="final-paid">{{ "{:,}".format(order.final_amount) }}원</span>
+      </div>
+    </div>
+
+    <!-- 결제 완료 품목 리스트 -->
+    <div class="complete-items-list">
+      <h3>예약 완료된 상품</h3>
+      {% for item in order.items %}
+        <div class="complete-item">
+          <span>{{ item.product.name }} ({{ item.product.region }})</span>
+          <span>{{ item.quantity }}개 / {{ "{:,}".format(item.subtotal_price) }}원</span>
+        </div>
+      {% endfor %}
+    </div>
+
+    <div class="complete-actions">
+      <a href="{{ url_for('main.index') }}" class="btn-primary">홈으로 이동</a>
+      <a href="{{ url_for('order.history') }}" class="btn-outline">내 주문 내역 확인</a>
+    </div>
+  </div>
+</div>
+{% endblock %}
+

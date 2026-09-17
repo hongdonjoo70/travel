@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+
+{% block title %}대한민국 지역별 여행 지도 & 추천 관광 투어{% endblock %}
+
+{% block content %}
+<div class="hero-section">
+  <div class="hero-content">
+    <span class="sub-badge">Korea Tour Guide</span>
+    <h1>어디로 떠나시나요? <strong>대한민국 6대 권역</strong> 추천 투어</h1>
+    <p class="hero-desc">지도를 클릭하거나 지역을 선택하면 엄선된 명소와 <strong>회원 우대 할인가</strong>를 확인할 수 있습니다.</p>
+  </div>
+
+  <!-- 6대 지역 탭 내비게이션 -->
+  <div class="region-tabs-wrapper">
+    <a href="{{ url_for('main.index') }}" class="tab-btn {% if not selected_region %}active{% endif %}">전국 전체</a>
+    {% for r in regions %}
+      <a href="{{ url_for('main.index', region=r, theme=selected_theme) }}" 
+         class="tab-btn {% if selected_region == r %}active{% endif %}">
+        {{ r }}
+      </a>
+    {% endfor %}
+  </div>
+</div>
+
+<div class="container layout-split">
+  <!-- 좌측: 지도 시각화 인터랙션 영역 -->
+  <div class="map-panel">
+    <div class="card-header-clean">
+      <h3>🗺️ 권역별 인터랙티브 지도</h3>
+      <span class="text-muted">원하는 지역을 선택하세요</span>
+    </div>
+    
+    <div class="map-stage-box">
+      <div class="map-wrapper" id="mapWrapper">
+        <img src="{{ url_for('static', filename='img/map-backdrop.png') }}" alt="전국 기본 지도" class="map-base">
+        <!-- 오버레이 지역 이미지들 -->
+        <img src="{{ url_for('static', filename='img/map-seoul-area.png') }}" class="map-overlay {% if selected_region == '서울/경기' %}visible{% endif %}" alt="서울/경기">
+        <img src="{{ url_for('static', filename='img/map-gangwon.png') }}" class="map-overlay {% if selected_region == '강원' %}visible{% endif %}" alt="강원">
+        <img src="{{ url_for('static', filename='img/map-chungcheong.png') }}" class="map-overlay {% if selected_region == '충청' %}visible{% endif %}" alt="충청">
+        <img src="{{ url_for('static', filename='img/map-jeolla.png') }}" class="map-overlay {% if selected_region == '전라' %}visible{% endif %}" alt="전라">
+        <img src="{{ url_for('static', filename='img/map-gyeongsang.png') }}" class="map-overlay {% if selected_region == '경북' %}visible{% endif %}" alt="경북">
+        <img src="{{ url_for('static', filename='img/map-jeju.png') }}" class="map-overlay {% if selected_region == '제주' %}visible{% endif %}" alt="제주">
+      </div>
+      <div class="map-quick-buttons">
+        <a href="{{ url_for('main.index', region='서울/경기') }}" class="quick-chip {% if selected_region == '서울/경기' %}active{% endif %}">서울/경기</a>
+        <a href="{{ url_for('main.index', region='강원') }}" class="quick-chip {% if selected_region == '강원' %}active{% endif %}">강원</a>
+        <a href="{{ url_for('main.index', region='충청') }}" class="quick-chip {% if selected_region == '충청' %}active{% endif %}">충청</a>
+        <a href="{{ url_for('main.index', region='전라') }}" class="quick-chip {% if selected_region == '전라' %}active{% endif %}">전라</a>
+        <a href="{{ url_for('main.index', region='경북') }}" class="quick-chip {% if selected_region == '경북' %}active{% endif %}">경북</a>
+        <a href="{{ url_for('main.index', region='제주') }}" class="quick-chip {% if selected_region == '제주' %}active{% endif %}">제주</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- 우측: 테마 필터 및 추천 상품 리스트 -->
+  <div class="products-panel">
+    <div class="theme-filter-bar">
+      <span class="filter-title">🎯 테마 선택:</span>
+      <a href="{{ url_for('main.index', region=selected_region) }}" class="theme-chip {% if not selected_theme %}active{% endif %}">전체</a>
+      {% for t in themes %}
+        <a href="{{ url_for('main.index', region=selected_region, theme=t.code) }}" 
+           class="theme-chip {% if selected_theme == t.code %}active{% endif %}">
+          {{ t.name }}
+        </a>
+      {% endfor %}
+      <a href="{{ url_for('product.popular') }}" class="theme-chip highlight-chip">🔥 실시간 추천 TOP</a>
+    </div>
+
+    <div class="section-title-wrap">
+      <h2>
+        {% if selected_region %}[{{ selected_region }}]{% else %}전국{% endif %}
+        추천 여행 상품
+        <span class="count-badge">{{ products|length }}건</span>
+      </h2>
+      <a href="{{ url_for('product.list_products') }}" class="link-more">전체보기 &rarr;</a>
+    </div>
+
+    {% if products %}
+      <div class="product-grid">
+        {% for p in products %}
+          <div class="product-card">
+            <div class="card-thumb-wrap">
+              <img src="{{ p.image_url }}" alt="{{ p.name }}" class="card-thumb" onerror="this.src='/static/img/default-tour.jpg'">
+              <span class="badge-region">{{ p.region }}</span>
+              <span class="badge-theme">{{ p.theme.name }}</span>
+            </div>
+            <div class="card-body">
+              <div class="card-meta">
+                <span class="like-stat">❤️ {{ p.recommendation_count }}</span>
+                <span class="rating-stat">⭐ {{ p.get_average_rating() }} ({{ p.reviews.count() }})</span>
+              </div>
+              <h3 class="card-title">
+                <a href="{{ url_for('product.detail', product_id=p.id) }}">{{ p.name }}</a>
+              </h3>
+              <p class="card-desc">{{ p.description[:60] }}...</p>
+              
+              <div class="pricing-box">
+                <span class="original-price">{{ "{:,}".format(p.original_price) }}원</span>
+                <div class="final-price-wrap">
+                  <span class="final-price">{{ "{:,}".format(p.get_discounted_price(current_user.is_authenticated)) }}원</span>
+                  {% if current_user.is_authenticated %}
+                    <span class="discount-badge">회원 {{ (p.member_discount_rate * 100)|int }}% 할인</span>
+                  {% else %}
+                    <span class="guest-notice">(회원가입 시 {{ (p.member_discount_rate * 100)|int }}% 할인)</span>
+                  {% endif %}
+                </div>
+              </div>
+
+              <div class="card-actions">
+                <a href="{{ url_for('product.detail', product_id=p.id) }}" class="btn-detail">상세보기</a>
+                {% if current_user.is_authenticated %}
+                  <form action="{{ url_for('cart.add_to_cart') }}" method="POST" class="inline-form">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="product_id" value="{{ p.id }}">
+                    <input type="hidden" name="quantity" value="1">
+                    <button type="submit" class="btn-cart-sm" title="장바구니 담기">🛒</button>
+                  </form>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty-state">
+        <span class="empty-icon">🏖️</span>
+        <p>선택하신 조건에 해당하는 관광 여행 상품이 없습니다.</p>
+        <a href="{{ url_for('main.index') }}" class="btn-outline">전체 상품 보기</a>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+

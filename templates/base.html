@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}대한민국 관광지 안내 & 여행 투어{% endblock %}</title>
+  
+  <!-- Pretendard CDN -->
+  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
+  
+  <!-- Main CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+  <!-- Header / Navigation -->
+  <header class="navbar">
+    <div class="nav-container">
+      <a href="{{ url_for('main.index') }}" class="brand-logo">
+        <span class="logo-icon">🗺️</span>
+        <span class="logo-text">대한민국 <strong>여행 투어</strong></span>
+      </a>
+
+      <nav class="nav-links">
+        <a href="{{ url_for('main.index') }}" class="nav-link {% if request.endpoint == 'main.index' %}active{% endif %}">홈 (지도 추천)</a>
+        <a href="{{ url_for('product.list_products') }}" class="nav-link {% if request.endpoint == 'product.list_products' %}active{% endif %}">여행 상품</a>
+        <a href="{{ url_for('product.popular') }}" class="nav-link nav-highlight {% if request.endpoint == 'product.popular' %}active{% endif %}">
+          <span class="badge-hot">HOT</span> 추천 랭킹
+        </a>
+      </nav>
+
+      <div class="nav-auth">
+        {% if current_user.is_authenticated %}
+          <a href="{{ url_for('cart.view_cart') }}" class="cart-btn" title="내 장바구니">
+            <span class="cart-icon">🛒</span>
+            <span class="cart-label">장바구니</span>
+            {% if current_user.cart and current_user.cart.items.count() > 0 %}
+              <span class="cart-count">{{ current_user.cart.get_total_count() }}</span>
+            {% endif %}
+          </a>
+          <span class="user-greeting">
+            <strong>{{ current_user.name }}</strong>님
+            <span class="member-tag">회원 할인중</span>
+          </span>
+          <a href="{{ url_for('order.history') }}" class="btn-text">주문내역</a>
+          <a href="{{ url_for('auth.logout') }}" class="btn-outline">로그아웃</a>
+        {% else %}
+          <a href="{{ url_for('auth.login') }}" class="btn-text">로그인</a>
+          <a href="{{ url_for('auth.signup') }}" class="btn-primary">회원가입</a>
+        {% endif %}
+      </div>
+    </div>
+  </header>
+
+  <!-- Flash Messages -->
+  <div class="flash-container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }}">
+            <span>{{ message }}</span>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+  </div>
+
+  <!-- Main Content -->
+  <main class="main-wrapper">
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-info">
+        <h3>대한민국 관광지 안내 포털</h3>
+        <p>서울/경기 · 전라 · 충청 · 강원 · 경북 · 제주 6대 권역별 맞춤 여행 및 힐링/체험 테마 투어</p>
+        <p class="copyright">© 2026 Korea Tourism Guide. All rights reserved.</p>
+      </div>
+      <div class="footer-benefit">
+        <div class="benefit-box">
+          <span class="benefit-icon">🎁</span>
+          <div class="benefit-text">
+            <strong>회원 가입 특별 혜택</strong>
+            <span>모든 추천 여행 상품 10~20% 즉시 할인</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  {% block extra_js %}{% endblock %}
+</body>
+</html>
+

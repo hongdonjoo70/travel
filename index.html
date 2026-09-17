@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>대한민국 지역별 여행 지도</title>
+  <link rel="stylesheet" href="style.css" />
+  <!-- Pretendard 폰트 CDN 적용 -->
+  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
+</head>
+<body>
+  <div class="app-wrapper">
+    <header class="app-header">
+      <span class="badge">Travel Map</span>
+      <h1>대한민국 지역별 여행 지도</h1>
+      <p class="subtitle">원하는 지역을 선택하면 지도에서 해당 지역이 하이라이트됩니다.</p>
+    </header>
+
+    <main class="main-content">
+      <!-- 지역 선택 버튼 탭 그룹 -->
+      <nav class="region-nav" aria-label="지역 선택">
+        <button type="button" class="btn-region active" data-region="all">전국</button>
+        <button type="button" class="btn-region" data-region="seoul">서울/수도권</button>
+        <button type="button" class="btn-region" data-region="gangwon">강원</button>
+        <button type="button" class="btn-region" data-region="chungcheong">충청</button>
+        <button type="button" class="btn-region" data-region="jeolla">전라</button>
+        <button type="button" class="btn-region" data-region="gyeongsang">경상</button>
+        <button type="button" class="btn-region" data-region="jeju">제주</button>
+      </nav>
+
+      <!-- 지도 및 상세 정보 카드 컨테이너 -->
+      <section class="map-card">
+        <div class="map-card-body">
+          
+          <!-- 지도 뷰어 (370 x 539 규격 레이어 중첩 방식) -->
+          <div class="map-stage">
+            <div class="map-container" id="mapContainer">
+              <!-- 기본 배경: 전국 지도 베이스 -->
+              <img
+                src="img/map-backdrop.png"
+                alt="전국 기본 지도"
+                class="map-layer map-backdrop"
+              />
+
+              <!-- 지역별 하이라이트 오버레이 레이어 (투명 PNG 중첩) -->
+              <img
+                src="img/map-seoul-area.png"
+                alt="서울/수도권"
+                class="map-layer map-region-layer"
+                data-region="seoul"
+              />
+              <img
+                src="img/map-gangwon.png"
+                alt="강원도"
+                class="map-layer map-region-layer"
+                data-region="gangwon"
+              />
+              <img
+                src="img/map-chungcheong.png"
+                alt="충청도"
+                class="map-layer map-region-layer"
+                data-region="chungcheong"
+              />
+              <img
+                src="img/map-jeolla.png"
+                alt="전라도"
+                class="map-layer map-region-layer"
+                data-region="jeolla"
+              />
+              <img
+                src="img/map-gyeongsang.png"
+                alt="경상도"
+                class="map-layer map-region-layer"
+                data-region="gyeongsang"
+              />
+              <img
+                src="img/map-jeju.png"
+                alt="제주도"
+                class="map-layer map-region-layer"
+                data-region="jeju"
+              />
+            </div>
+          </div>
+
+          <!-- 선택된 지역 정보 패널 -->
+          <div class="info-panel">
+            <div class="panel-header">
+              <span class="status-indicator"></span>
+              <h2 id="regionTitle">전국</h2>
+            </div>
+            <p id="regionDescription" class="region-desc">
+              전체 지역이 표시되어 있습니다. 둘러보고 싶은 권역을 상단에서 선택해보세요.
+            </p>
+
+            <div class="panel-meta">
+              <div class="meta-item">
+                <span class="meta-label">표시 이미지</span>
+                <code id="fileBadge" class="file-code">map-backdrop.png</code>
+              </div>
+              <div class="meta-item">
+                <span class="meta-label">권역 분류</span>
+                <span id="regionCategory" class="meta-val">전국 전체</span>
+              </div>
+            </div>
+
+            <!-- 모바일/화면 전환 지원용 셀렉트 드롭다운 -->
+            <div class="select-wrapper">
+              <label for="regionSelect">드롭다운으로 빠른 선택:</label>
+              <select id="regionSelect" class="region-select">
+                <option value="all">전국 (map-backdrop.png)</option>
+                <option value="seoul">서울/수도권 (map-seoul-area.png)</option>
+                <option value="gangwon">강원 (map-gangwon.png)</option>
+                <option value="chungcheong">충청 (map-chungcheong.png)</option>
+                <option value="jeolla">전라 (map-jeolla.png)</option>
+                <option value="gyeongsang">경상 (map-gyeongsang.png)</option>
+                <option value="jeju">제주 (map-jeju.png)</option>
+              </select>
+            </div>
+          </div>
+
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    // 지역별 메타데이터 매핑
+    const REGION_DATA = {
+      all: {
+        title: "전국",
+        category: "전국 전체",
+        file: "map-backdrop.png",
+        desc: "전체 대한민국 지도가 표시 중입니다. 특정 지역을 선택하여 세부 권역을 확인하세요."
+      },
+      seoul: {
+        title: "서울 / 수도권",
+        category: "서울특별시, 경기도, 인천광역시",
+        file: "map-seoul-area.png",
+        desc: "대한민국의 수도 서울과 경기, 인천을 포함하는 수도권 지역입니다."
+      },
+      gangwon: {
+        title: "강원도",
+        category: "강원특별자치도",
+        file: "map-gangwon.png",
+        desc: "동해 바다와 웅장한 태백산맥, 청정 자연 여행지가 가득한 강원권입니다."
+      },
+      chungcheong: {
+        title: "충청도",
+        category: "충청북도, 충청남도, 대전, 세종",
+        file: "map-chungcheong.png",
+        desc: "대한민국의 중심부로서 역사 문화와 자연 힐링을 함께 만날 수 있는 충청권입니다."
+      },
+      jeolla: {
+        title: "전라도",
+        category: "전라북도, 전라남도, 광주광역시",
+        file: "map-jeolla.png",
+        desc: "풍성한 맛의 미식 여행과 아름다운 남해안 풍경, 전통 문화가 숨쉬는 전라권입니다."
+      },
+      gyeongsang: {
+        title: "경상도",
+        category: "경상북도, 경상남도, 부산, 대구, 울산",
+        file: "map-gyeongsang.png",
+        desc: "찬란한 신라·가야의 역사 유적과 활기찬 해양 도시들을 아우르는 경상권입니다."
+      },
+      jeju: {
+        title: "제주도",
+        category: "제주특별자치도",
+        file: "map-jeju.png",
+        desc: "에메랄드빛 바다와 한라산, 유네스코 세계자연유산을 간직한 대한민국 대표 휴양지입니다."
+      }
+    };
+
+    // DOM 요소 캐싱
+    const regionButtons = document.querySelectorAll(".btn-region");
+    const regionLayers = document.querySelectorAll(".map-region-layer");
+    const regionSelect = document.getElementById("regionSelect");
+    const regionTitle = document.getElementById("regionTitle");
+    const regionDesc = document.getElementById("regionDescription");
+    const regionCategory = document.getElementById("regionCategory");
+    const fileBadge = document.getElementById("fileBadge");
+
+    /**
+     * 특정 지역으로 지도를 전환하는 함수
+     * @param {string} regionKey - all, seoul, gangwon, chungcheong, jeolla, gyeongsang, jeju
+     */
+    function switchRegion(regionKey) {
+      if (!REGION_DATA[regionKey]) return;
+
+      // 1. 버튼 활성화 상태 갱신
+      regionButtons.forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.region === regionKey);
+      });
+
+      // 2. 셀렉트 박스 동기화
+      if (regionSelect.value !== regionKey) {
+        regionSelect.value = regionKey;
+      }
+
+      // 3. 지도 레이어 표시/숨김 제어
+      regionLayers.forEach(layer => {
+        if (layer.dataset.region === regionKey) {
+          layer.classList.add("active");
+        } else {
+          layer.classList.remove("active");
+        }
+      });
+
+      // 4. 정보 패널 텍스트 및 파일명 갱신
+      const info = REGION_DATA[regionKey];
+      regionTitle.textContent = info.title;
+      regionCategory.textContent = info.category;
+      fileBadge.textContent = info.file;
+      regionDesc.textContent = info.desc;
+    }
+
+    // 버튼 클릭 이벤트 리스너 등록
+    regionButtons.forEach(btn => {
+      btn.addEventListener("click", () => {
+        const selectedRegion = btn.dataset.region;
+        switchRegion(selectedRegion);
+      });
+    });
+
+    // 드롭다운 셀렉트 변경 이벤트 리스너 등록
+    regionSelect.addEventListener("change", (e) => {
+      switchRegion(e.target.value);
+    });
+  </script>
+</body>
+</html>
+

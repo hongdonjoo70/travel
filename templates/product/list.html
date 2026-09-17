@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block title %}관광 여행 상품 목록 - 대한민국 관광 투어{% endblock %}
+
+{% block content %}
+<div class="container page-content">
+  <div class="page-header">
+    <h1>관광 및 여행 상품 <strong>탐색</strong></h1>
+    <p>6대 권역별 명소와 힐링/체험 테마 여행 상품을 둘러보세요.</p>
+  </div>
+
+  <!-- 필터 바 (지역 & 테마 & 정렬) -->
+  <div class="filter-panel">
+    <!-- 지역 필터 (6개 권역) -->
+    <div class="filter-group">
+      <span class="filter-label">📍 지역별:</span>
+      <div class="chips-container">
+        <a href="{{ url_for('product.list_products', theme_id=selected_theme_id, sort=sort_by) }}" 
+           class="chip {% if not selected_region %}active{% endif %}">전체</a>
+        {% for r in regions %}
+          <a href="{{ url_for('product.list_products', region=r, theme_id=selected_theme_id, sort=sort_by) }}" 
+             class="chip {% if selected_region == r %}active{% endif %}">{{ r }}</a>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- 테마 필터 (휴양지, 체험 등 확장형) -->
+    <div class="filter-group">
+      <span class="filter-label">🌿 테마별:</span>
+      <div class="chips-container">
+        <a href="{{ url_for('product.list_products', region=selected_region, sort=sort_by) }}" 
+           class="chip {% if not selected_theme_id %}active{% endif %}">전체</a>
+        {% for t in themes %}
+          <a href="{{ url_for('product.list_products', region=selected_region, theme_id=t.id, sort=sort_by) }}" 
+             class="chip {% if selected_theme_id == t.id %}active{% endif %}">{{ t.name }}</a>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- 정렬 바 -->
+    <div class="sort-bar">
+      <span class="sort-label">정렬 기준:</span>
+      <a href="{{ url_for('product.list_products', region=selected_region, theme_id=selected_theme_id, sort='popular') }}" 
+         class="sort-link {% if sort_by == 'popular' %}active{% endif %}">추천순</a>
+      <a href="{{ url_for('product.list_products', region=selected_region, theme_id=selected_theme_id, sort='latest') }}" 
+         class="sort-link {% if sort_by == 'latest' %}active{% endif %}">최신순</a>
+      <a href="{{ url_for('product.list_products', region=selected_region, theme_id=selected_theme_id, sort='price_asc') }}" 
+         class="sort-link {% if sort_by == 'price_asc' %}active{% endif %}">낮은가격순</a>
+      <a href="{{ url_for('product.list_products', region=selected_region, theme_id=selected_theme_id, sort='price_desc') }}" 
+         class="sort-link {% if sort_by == 'price_desc' %}active{% endif %}">높은가격순</a>
+    </div>
+  </div>
+
+  <!-- 상품 그리드 -->
+  {% if products %}
+    <div class="product-grid">
+      {% for p in products %}
+        <div class="product-card">
+          <div class="card-thumb-wrap">
+            <img src="{{ p.image_url }}" alt="{{ p.name }}" class="card-thumb" onerror="this.src='/static/img/default-tour.jpg'">
+            <span class="badge-region">{{ p.region }}</span>
+            <span class="badge-theme">{{ p.theme.name }}</span>
+          </div>
+          <div class="card-body">
+            <div class="card-meta">
+              <span class="like-stat">❤️ {{ p.recommendation_count }}</span>
+              <span class="rating-stat">⭐ {{ p.get_average_rating() }} ({{ p.reviews.count() }})</span>
+            </div>
+            <h3 class="card-title">
+              <a href="{{ url_for('product.detail', product_id=p.id) }}">{{ p.name }}</a>
+            </h3>
+            <p class="card-desc">{{ p.description[:70] }}...</p>
+            
+            <div class="pricing-box">
+              <span class="original-price">{{ "{:,}".format(p.original_price) }}원</span>
+              <div class="final-price-wrap">
+                <span class="final-price">{{ "{:,}".format(p.get_discounted_price(current_user.is_authenticated)) }}원</span>
+                {% if current_user.is_authenticated %}
+                  <span class="discount-badge">회원 {{ (p.member_discount_rate * 100)|int }}% 할인</span>
+                {% else %}
+                  <span class="guest-notice">(회원가입 시 {{ (p.member_discount_rate * 100)|int }}% 할인)</span>
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="card-actions">
+              <a href="{{ url_for('product.detail', product_id=p.id) }}" class="btn-detail">상세보기</a>
+              {% if current_user.is_authenticated %}
+                <form action="{{ url_for('cart.add_to_cart') }}" method="POST" class="inline-form">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <input type="hidden" name="product_id" value="{{ p.id }}">
+                  <input type="hidden" name="quantity" value="1">
+                  <button type="submit" class="btn-cart-sm" title="장바구니 담기">🛒</button>
+                </form>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty-state">
+      <span class="empty-icon">🔍</span>
+      <p>조건에 맞는 관광 상품이 없습니다.</p>
+      <a href="{{ url_for('product.list_products') }}" class="btn-outline">필터 초기화</a>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}
+

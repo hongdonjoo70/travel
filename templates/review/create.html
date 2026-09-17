@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}후기 작성 - {{ product.name }}{% endblock %}
+
+{% block content %}
+<div class="container page-content auth-wrapper">
+  <div class="auth-card review-create-card">
+    <div class="auth-header">
+      <span class="auth-badge">회원 전용 서비스</span>
+      <h2>✏️ 여행 후기 작성</h2>
+      <p><strong>{{ product.name }}</strong> ({{ product.region }}) 상품에 대한 솔직한 후기를 남겨주세요.</p>
+    </div>
+
+    <form method="POST" action="{{ url_for('review.create_review', product_id=product.id) }}" class="form-body">
+      {{ form.hidden_tag() }}
+
+      <div class="form-group">
+        {{ form.rating.label(class="form-label") }}
+        {{ form.rating(class="form-control") }}
+        {% for error in form.rating.errors %}
+          <div class="form-error">{{ error }}</div>
+        {% endfor %}
+      </div>
+
+      <div class="form-group">
+        {{ form.title.label(class="form-label") }}
+        {{ form.title(class="form-control", placeholder="한 줄 요약 또는 후기 제목을 입력해주세요.") }}
+        {% for error in form.title.errors %}
+          <div class="form-error">{{ error }}</div>
+        {% endfor %}
+      </div>
+
+      <div class="form-group">
+        {{ form.content.label(class="form-label") }}
+        {{ form.content(class="form-control text-area-large", rows=6, placeholder="방문 후기, 여행 팁, 추천 이유 등을 상세히 작성해주세요.") }}
+        {% for error in form.content.errors %}
+          <div class="form-error">{{ error }}</div>
+        {% endfor %}
+      </div>
+
+      <div class="form-action btn-group-action">
+        {{ form.submit(class="btn-primary-action") }}
+        <a href="{{ url_for('product.detail', product_id=product.id) }}" class="btn-secondary-action">취소</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+

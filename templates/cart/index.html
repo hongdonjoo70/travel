@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% block title %}내 장바구니 - 대한민국 관광 투어{% endblock %}
+
+{% block content %}
+<div class="container page-content">
+  <div class="page-header">
+    <h1>🛒 내 <strong>장바구니</strong></h1>
+    <p>담아두신 여행 상품을 확인하고 <strong>회원 전용 특별 할인가</strong>로 예약하세요.</p>
+  </div>
+
+  {% if cart.items.count() > 0 %}
+    <div class="cart-layout">
+      <!-- 좌측: 품목 목록 -->
+      <div class="cart-items-panel">
+        <div class="cart-table-header">
+          <span class="col-info">상품 정보</span>
+          <span class="col-price">금액 (회원 할인가)</span>
+          <span class="col-qty">수량</span>
+          <span class="col-subtotal">소계</span>
+          <span class="col-action">관리</span>
+        </div>
+
+        <div class="cart-items-list">
+          {% for item in cart.items %}
+            <div class="cart-item-row">
+              <div class="col-info item-info-cell">
+                <img src="{{ item.product.image_url }}" alt="{{ item.product.name }}" class="cart-item-thumb" onerror="this.src='/static/img/default-tour.jpg'">
+                <div class="item-text">
+                  <span class="item-tags">[{{ item.product.region }} · {{ item.product.theme.name }}]</span>
+                  <a href="{{ url_for('product.detail', product_id=item.product.id) }}" class="item-title">
+                    {{ item.product.name }}
+                  </a>
+                </div>
+              </div>
+
+              <div class="col-price item-price-cell">
+                <span class="item-orig-price">{{ "{:,}".format(item.product.original_price) }}원</span>
+                <span class="item-final-price">{{ "{:,}".format(item.product.get_discounted_price(True)) }}원</span>
+                <span class="item-discount-tag">{{ (item.product.member_discount_rate * 100)|int }}% 할인</span>
+              </div>
+
+              <div class="col-qty item-qty-cell">
+                <form action="{{ url_for('cart.update_quantity') }}" method="POST" class="qty-update-form">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <input type="hidden" name="cart_item_id" value="{{ item.id }}">
+                  <input type="number" name="quantity" value="{{ item.quantity }}" min="1" max="99" class="qty-field">
+                  <button type="submit" class="btn-qty-update">변경</button>
+                </form>
+              </div>
+
+              <div class="col-subtotal item-subtotal-cell">
+                <strong>{{ "{:,}".format(item.get_subtotal_final(True)) }}원</strong>
+              </div>
+
+              <div class="col-action item-action-cell">
+                <form action="{{ url_for('cart.remove_item', item_id=item.id) }}" method="POST">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <button type="submit" class="btn-delete-item" title="삭제">✕</button>
+                </form>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+
+        <div class="cart-bottom-actions">
+          <form action="{{ url_for('cart.clear_cart') }}" method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn-outline-danger" onclick="return confirm('장바구니를 모두 비우시겠습니까?');">장바구니 전체 비우기</button>
+          </form>
+          <a href="{{ url_for('product.list_products') }}" class="btn-outline">여행 상품 더 둘러보기</a>
+        </div>
+      </div>
+
+      <!-- 우측: 결제 요약 카드 -->
+      <div class="cart-summary-panel">
+        <div class="summary-card">
+          <h3>결제 금액 요약</h3>
+
+          <div class="summary-row">
+            <span>정상 상품 금액</span>
+            <span>{{ "{:,}".format(cart.get_total_original_price()) }}원</span>
+          </div>
+
+          <div class="summary-row discount-highlight">
+            <span>회원 특별 우대 할인</span>
+            <span>- {{ "{:,}".format(cart.get_total_discount_amount(True)) }}원</span>
+          </div>
+
+          <div class="summary-divider"></div>
+
+          <div class="summary-row total-row">
+            <span><strong>최종 결제 예상 금액</strong></span>
+            <span class="total-amount"><strong>{{ "{:,}".format(cart.get_total_final_price(True)) }}원</strong></span>
+          </div>
+
+          <div class="member-benefit-alert">
+            <span class="alert-icon">🎉</span>
+            <p><strong>{{ current_user.name }}</strong>님께 전 품목 <strong>회원 우대 할인</strong>이 자동 적용되었습니다.</p>
+          </div>
+
+          <div class="summary-actions">
+            <a href="{{ url_for('order.checkout') }}" class="btn-checkout-primary">
+              주문 및 결제하기 (총 {{ cart.get_total_count() }}개)
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  {% else %}
+    <div class="empty-state">
+      <span class="empty-icon">🛒</span>
+      <h2>장바구니가 비어 있습니다.</h2>
+      <p>마음에 드는 지역과 테마의 관광 여행 상품을 담아보세요!</p>
+      <div class="empty-actions">
+        <a href="{{ url_for('main.index') }}" class="btn-primary">지역별 추천 보기</a>
+        <a href="{{ url_for('product.popular') }}" class="btn-outline">🔥 실시간 추천 TOP 보기</a>
+      </div>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}
+

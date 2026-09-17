@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}로그인 - 대한민국 관광 투어{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper">
+  <div class="auth-card">
+    <div class="auth-header">
+      <h2>로그인</h2>
+      <p>로그인하시면 회원 특별 할인 금액으로 예약 및 여행 후기 작성이 가능합니다.</p>
+    </div>
+
+    <form method="POST" action="{{ url_for('auth.login', next=request.args.get('next')) }}" class="form-body">
+      {{ form.hidden_tag() }}
+
+      <div class="form-group">
+        {{ form.username.label(class="form-label") }}
+        {{ form.username(class="form-control", placeholder="아이디 입력") }}
+        {% for error in form.username.errors %}
+          <div class="form-error">{{ error }}</div>
+        {% endfor %}
+      </div>
+
+      <div class="form-group">
+        {{ form.password.label(class="form-label") }}
+        {{ form.password(class="form-control", placeholder="비밀번호 입력") }}
+        {% for error in form.password.errors %}
+          <div class="form-error">{{ error }}</div>
+        {% endfor %}
+      </div>
+
+      <div class="form-action">
+        {{ form.submit(class="btn-submit") }}
+      </div>
+    </form>
+
+    <div class="auth-footer">
+      아직 회원이 아니신가요? <a href="{{ url_for('auth.signup') }}">회원가입하고 할인받기</a>
+    </div>
+  </div>
+</div>
+{% endblock %}
+

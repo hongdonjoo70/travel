@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block title %}실시간 추천 TOP 관광상품 랭킹 - 대한민국 관광 투어{% endblock %}
+
+{% block content %}
+<div class="container page-content">
+  <div class="ranking-hero">
+    <span class="ranking-badge">REAL-TIME RANKING</span>
+    <h1>🏆 실시간 <strong>추천 관광상품 TOP 랭킹</strong></h1>
+    <p>여행자들이 가장 많이 추천(❤️)한 최고의 명소와 투어 코스입니다.</p>
+  </div>
+
+  <!-- 필터 (지역 & 테마) -->
+  <div class="filter-panel">
+    <div class="filter-group">
+      <span class="filter-label">📍 권역 선택:</span>
+      <div class="chips-container">
+        <a href="{{ url_for('product.popular', theme_id=selected_theme_id) }}" 
+           class="chip {% if not selected_region %}active{% endif %}">전체 랭킹</a>
+        {% for r in regions %}
+          <a href="{{ url_for('product.popular', region=r, theme_id=selected_theme_id) }}" 
+             class="chip {% if selected_region == r %}active{% endif %}">{{ r }}</a>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="filter-group">
+      <span class="filter-label">🌿 테마 선택:</span>
+      <div class="chips-container">
+        <a href="{{ url_for('product.popular', region=selected_region) }}" 
+           class="chip {% if not selected_theme_id %}active{% endif %}">전체 테마</a>
+        {% for t in themes %}
+          <a href="{{ url_for('product.popular', region=selected_region, theme_id=t.id) }}" 
+             class="chip {% if selected_theme_id == t.id %}active{% endif %}">{{ t.name }}</a>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <!-- 랭킹 목록 -->
+  {% if products %}
+    <div class="ranking-grid">
+      {% for p in products %}
+        <div class="ranking-card {% if loop.index <= 3 %}rank-top3{% endif %}">
+          <!-- 랭킹 메달/배지 -->
+          <div class="rank-badge-wrap">
+            {% if loop.index == 1 %}
+              <span class="rank-badge rank-1">🥇 1위</span>
+            {% elif loop.index == 2 %}
+              <span class="rank-badge rank-2">🥈 2위</span>
+            {% elif loop.index == 3 %}
+              <span class="rank-badge rank-3">🥉 3위</span>
+            {% else %}
+              <span class="rank-badge rank-normal">{{ loop.index }}위</span>
+            {% endif %}
+          </div>
+
+          <div class="rank-thumb-wrap">
+            <img src="{{ p.image_url }}" alt="{{ p.name }}" class="rank-thumb" onerror="this.src='/static/img/default-tour.jpg'">
+            <div class="thumb-chips">
+              <span class="badge-region">{{ p.region }}</span>
+              <span class="badge-theme">{{ p.theme.name }}</span>
+            </div>
+          </div>
+
+          <div class="rank-content">
+            <div class="rank-meta">
+              <span class="like-highlight">❤️ 추천 <strong>{{ "{:,}".format(p.recommendation_count) }}</strong>명</span>
+              <span class="rating-highlight">⭐ {{ p.get_average_rating() }} (후기 {{ p.reviews.count() }}개)</span>
+            </div>
+
+            <h3 class="rank-title">
+              <a href="{{ url_for('product.detail', product_id=p.id) }}">{{ p.name }}</a>
+            </h3>
+            <p class="rank-desc">{{ p.description[:80] }}...</p>
+
+            <div class="pricing-box">
+              <span class="original-price">{{ "{:,}".format(p.original_price) }}원</span>
+              <div class="final-price-wrap">
+                <span class="final-price">{{ "{:,}".format(p.get_discounted_price(current_user.is_authenticated)) }}원</span>
+                {% if current_user.is_authenticated %}
+                  <span class="discount-badge">회원 {{ (p.member_discount_rate * 100)|int }}% 할인</span>
+                {% else %}
+                  <span class="guest-notice">(회원가입 시 {{ (p.member_discount_rate * 100)|int }}% 할인)</span>
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="rank-actions">
+              <a href="{{ url_for('product.detail', product_id=p.id) }}" class="btn-detail">상세보기</a>
+              {% if current_user.is_authenticated %}
+                <form action="{{ url_for('cart.add_to_cart') }}" method="POST" class="inline-form">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <input type="hidden" name="product_id" value="{{ p.id }}">
+                  <input type="hidden" name="quantity" value="1">
+                  <button type="submit" class="btn-cart" title="장바구니 담기">🛒 담기</button>
+                </form>
+                <form action="{{ url_for('product.toggle_like', product_id=p.id) }}" method="POST" class="inline-form">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <button type="submit" class="btn-like-sm {% if p.is_liked_by(current_user) %}liked{% endif %}" title="추천하기">
+                    {% if p.is_liked_by(current_user) %}❤️ 추천완료{% else %}🤍 추천{% endif %}
+                  </button>
+                </form>
+              {% else %}
+                <a href="{{ url_for('auth.login', next=request.path) }}" class="btn-like-sm" title="로그인 후 추천">🤍 추천</a>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty-state">
+      <span class="empty-icon">🏆</span>
+      <p>조건에 맞는 랭킹 상품이 없습니다.</p>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}
+

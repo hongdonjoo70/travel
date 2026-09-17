@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block title %}회원가입 - 대한민국 관광 투어{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper">
+  <div class="auth-card">
+    <div class="auth-header">
+      <span class="auth-badge">회원 전용 혜택</span>
+      <h2>회원가입</h2>
+      <p>가입 즉시 전 권역 관광 상품 <strong>10~20% 특별 우대 할인</strong> 및 후기 작성 권한이 부여됩니다.</p>
+    </div>
+
+    <form method="POST" action="{{ url_for('auth.signup') }}" class="form-body">
+      {{ form.hidden_tag() }}
+
+      <div class="form-group">
+        {{ form.username.label(class="form-label") }}
+        {{ form.username(class="form-control", placeholder="로그인에 사용할 아이디(4~20자)") }}
+        {% for error in form.username.errors %}
+          <div class="form-error">{{ error }}</div>
+        {% endfor %}
+      </div>
+
+      <div class="form-group">
+        {{ form.name.label(class="form-label") }}
+        {{ form.name(class="form-control", placeholder="실명 또는 사용자 이름") }}
+        {% for error in form.name.errors %}
+          <div class="form-error">{{ error }}</div>
+        {% endfor %}
+      </div>
+
+      <div class="form-group">
+        {{ form.email.label(class="form-label") }}
+        {{ form.email(class="form-control", placeholder="예: user@example.com") }}
+        {% for error in form.email.errors %}
+          <div class="form-error">{{ error }}</div>
+        {% endfor %}
+      </div>
+
+      <div class="form-group">
+        {{ form.phone.label(class="form-label") }}
+        {{ form.phone(class="form-control", placeholder="예: 010-1234-5678") }}
+        {% for error in form.phone.errors %}
+          <div class="form-error">{{ error }}</div>
+        {% endfor %}
+      </div>
+
+      <div class="form-row">
+        <div class="form-group col">
+          {{ form.password.label(class="form-label") }}
+          {{ form.password(class="form-control", placeholder="비밀번호(6자 이상)") }}
+          {% for error in form.password.errors %}
+            <div class="form-error">{{ error }}</div>
+          {% endfor %}
+        </div>
+
+        <div class="form-group col">
+          {{ form.confirm_password.label(class="form-label") }}
+          {{ form.confirm_password(class="form-control", placeholder="비밀번호 재확인") }}
+          {% for error in form.confirm_password.errors %}
+            <div class="form-error">{{ error }}</div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="form-action">
+        {{ form.submit(class="btn-submit") }}
+      </div>
+    </form>
+
+    <div class="auth-footer">
+      이미 계정이 있으신가요? <a href="{{ url_for('auth.login') }}">로그인하기</a>
+    </div>
+  </div>
+</div>
+{% endblock %}
+

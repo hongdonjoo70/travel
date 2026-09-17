@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}내 주문 내역 - 대한민국 관광 투어{% endblock %}
+
+{% block content %}
+<div class="container page-content">
+  <div class="page-header">
+    <h1>📋 내 <strong>예약 / 결제 내역</strong></h1>
+    <p>회원님께서 예약 결제하신 여행 상품 목록입니다.</p>
+  </div>
+
+  {% if orders %}
+    <div class="orders-list">
+      {% for o in orders %}
+        <div class="order-card">
+          <div class="order-card-header">
+            <div>
+              <span class="order-no">주문번호: <strong>{{ o.order_no }}</strong></span>
+              <span class="order-date">{{ o.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+            </div>
+            <span class="order-status-badge status-{{ o.status.lower() }}">{{ o.status }}</span>
+          </div>
+
+          <div class="order-items-summary">
+            {% for item in o.items %}
+              <div class="order-item-line">
+                <span class="product-name">
+                  <a href="{{ url_for('product.detail', product_id=item.product.id) }}">{{ item.product.name }}</a>
+                </span>
+                <span class="product-details">
+                  수량: {{ item.quantity }}개 | 소계: {{ "{:,}".format(item.subtotal_price) }}원
+                </span>
+              </div>
+            {% endfor %}
+          </div>
+
+          <div class="order-card-footer">
+            <div class="footer-price-info">
+              <span>정가: {{ "{:,}".format(o.original_amount) }}원</span>
+              <span class="discount-tag">회원 할인: -{{ "{:,}".format(o.discount_amount) }}원</span>
+              <span class="total-paid">결제 금액: <strong>{{ "{:,}".format(o.final_amount) }}원</strong></span>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty-state">
+      <span class="empty-icon">📂</span>
+      <h2>예약 및 주문 내역이 없습니다.</h2>
+      <p>지금 바로 인기 여행 상품을 둘러보세요!</p>
+      <a href="{{ url_for('product.popular') }}" class="btn-primary">🔥 인기 관광상품 랭킹 보기</a>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}
+
