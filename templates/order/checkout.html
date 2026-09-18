@@ -32,6 +32,32 @@
         </div>
       </div>
 
+      {% if selected_accommodations %}
+        <!-- 연계 숙박 예약 확인 -->
+        <div class="card-section">
+          <h3>🏨 연계 숙박 예약 내역 (회원 우대)</h3>
+          <div class="checkout-items">
+            {% for item in selected_accommodations %}
+              <div class="checkout-item-row">
+                <img src="{{ item.accommodation.image_url }}" alt="{{ item.accommodation.name }}" class="checkout-thumb" onerror="this.src='/static/img/default-tour.jpg'">
+                <div class="checkout-info">
+                  <div class="acc-badge-wrap">
+                    <span class="badge-acc-tag {% if item.accommodation.acc_type == '민박' %}tag-minbak{% else %}tag-hotel{% endif %}">[{{ item.accommodation.acc_type }}]</span>
+                    <span class="text-muted">⭐ {{ item.accommodation.rating }}</span>
+                  </div>
+                  <h4>{{ item.accommodation.name }}</h4>
+                  <span class="text-muted">{{ item.accommodation.region }} | 1박 (회원 {{ (item.accommodation.member_discount_rate * 100)|int }}% 우대)</span>
+                </div>
+                <div class="checkout-prices">
+                  <span class="orig-strike">{{ "{:,}".format(item.original_price) }}원</span>
+                  <span class="discount-final">{{ "{:,}".format(item.final_price) }}원</span>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      {% endif %}
+
       <!-- 예약자 정보 -->
       <div class="card-section">
         <h3>2. 예약자 정보</h3>
@@ -87,6 +113,9 @@
           {% if direct_product_id %}
             <input type="hidden" name="direct_product_id" value="{{ direct_product_id }}">
             <input type="hidden" name="quantity" value="{{ quantity }}">
+          {% endif %}
+          {% if acc_ids %}
+            <input type="hidden" name="acc_ids" value="{{ acc_ids }}">
           {% endif %}
 
           <div class="payment-methods-grid">

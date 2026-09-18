@@ -114,3 +114,46 @@ class ProductLike(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
     product_id = db.Column(db.Integer, db.ForeignKey('tour_products.id', ondelete='CASCADE'), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+class Accommodation(db.Model):
+    """관광지 연계 추천 숙박 시설 (민박, 호텔) 모델"""
+    __tablename__ = 'accommodations'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(150), nullable=False)
+    acc_type = db.Column(db.String(20), nullable=False) # '민박' 또는 '호텔'
+    region = db.Column(db.String(50), nullable=False, index=True) # 6대 권역
+    tour_product_id = db.Column(db.Integer, db.ForeignKey('tour_products.id'), nullable=True) # 특정 관광 상품 연계 (선택)
+    price_per_night = db.Column(db.Integer, nullable=False) # 1박 기본 정상 요금
+    member_discount_rate = db.Column(db.Float, default=0.10) # 회원 우대 할인율 (기본 10%)
+    rating = db.Column(db.Float, default=4.8) # 평점
+    features = db.Column(db.String(255), nullable=True) # 주요 특징 (쉼표 구분)
+    image_url = db.Column(db.String(255), default='/static/img/default-tour.jpg')
+    description = db.Column(db.Text, nullable=True)
+    is_recommended = db.Column(db.Boolean, default=True) # 추천 여부
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+
+    # 관광 상품 역참조 관계
+    tour_product = db.relationship('TourProduct', backref=db.backref('accommodations', lazy='dynamic'))
+
+    def get_discounted_price(self, is_member=True):
+        """회원인 경우 할인된 1박 요금 반환"""
+        if is_member:
+            return int(self.price_per_night * (1 - self.member_discount_rate))
+        return self.price_per_night
+
+    def get_discount_amount(self, is_member=True):
+        """1박 할인 금액 반환"""
+        if is_member:
+            return self.price_per_night - self.get_discounted_price(True)
+        return 0
+
+    def get_feature_list(self):
+        """특징 태그를 리스트로 반환"""
+        if self.features:
+            return [f.strip() for f in self.features.split(',') if f.strip()]
+        return []
+
+    def __repr__(self):
+        return f"<Accommodation [{self.acc_type}] {self.name} ({self.region})>"
+

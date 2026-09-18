@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from flask_login import login_required, current_user
 from extensions import db
-from models.tour import TourProduct, Theme, RegionEnum, ProductLike
+from models.tour import TourProduct, Theme, RegionEnum, ProductLike, Accommodation
 from forms.cart_forms import AddToCartForm
 
 product_bp = Blueprint('product', __name__, url_prefix='/products')
@@ -54,13 +54,24 @@ def detail(product_id):
         TourProduct.id != product.id
     ).limit(3).all()
 
+    # 회원 전용 연계 추천 숙박 시설 ([민박] 및 [호텔])
+    recommended_minbaks = Accommodation.query.filter_by(
+        region=product.region, acc_type='민박', is_recommended=True
+    ).limit(4).all()
+
+    recommended_hotels = Accommodation.query.filter_by(
+        region=product.region, acc_type='호텔', is_recommended=True
+    ).limit(4).all()
+
     return render_template(
         'product/detail.html',
         product=product,
         cart_form=cart_form,
         is_liked=is_liked,
         reviews=reviews,
-        related_products=related_products
+        related_products=related_products,
+        recommended_minbaks=recommended_minbaks,
+        recommended_hotels=recommended_hotels
     )
 
 @product_bp.route('/popular')

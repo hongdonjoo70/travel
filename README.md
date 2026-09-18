@@ -56,6 +56,13 @@ Python **Flask** 프레임워크를 기반으로 제작된 대한민국 6대 권
 - **터치 & 제스처 & 자동 롤링**: 모바일 터치 스와이프 제스처, 키보드 좌우 방향키 탐색, 자동 롤링(마우스 호버 시 일시 정지) 지원
 - **탐색 목록 뱃지 표출**: 메인 및 여행 상품 탐색 화면 카드에서 등록된 사진 개수(`📷 4장`) 배지 표출
 
+### 8) 회원 전용 숙박([민박] / [호텔]) 연계 예약 시스템
+- **카테고리별 추천 숙박 제공**: 관광지 상세 페이지에서 해당 권역의 엄선된 **[민박]** 및 **[호텔]** 추천 리스트 제공 (전국 총 36개 숙소 데이터베이스 구축)
+- **카테고리별 최대 2개 선택 제약**: [민박] 최대 2개, [호텔] 최대 2개까지 자유롭게 선택 가능 (3개 이상 선택 시 자바스크립트 즉각 차단 및 사용자 알림)
+- **하단 실시간 합산 예약 바**: 투어 인원수 + 선택한 숙박 추가 요금이 실시간으로 합산되어 총 결제 예정액이 동적으로 계산 표출
+- **회원 전용 혜택 배너 (비회원 분기)**: 비회원 접속 시 숙박 선택이 잠금 처리되며 회원가입/로그인 유도 배너 제공
+- **통합 결제 및 주문 영수증**: 숙박 선택 후 결제 시 관광 상품과 연계 숙박이 단일 트랜잭션으로 처리되어 `OrderAccommodation`에 스냅샷 저장 및 주문 내역서에 투숙 정보 표시
+
 ---
 
 ## 2. 기술 스택
@@ -89,9 +96,9 @@ d:\hongdonjoo\travel\
 ├── models/                    # [데이터 모델 분리]
 │   ├── __init__.py            # 모델 패키지 모듈 export
 │   ├── user.py                # User 모델 (id, username, password_hash, name, email, phone)
-│   ├── tour.py                # RegionEnum(6대 권역), Theme(테마), TourProduct, ProductLike
+│   ├── tour.py                # RegionEnum(6대 권역), Theme(테마), TourProduct, ProductLike, Accommodation(민박/호텔)
 │   ├── cart.py                # Cart, CartItem 모델 (소계 및 회원 할인 계산 메서드)
-│   ├── order.py               # Order(회원/비회원 통합), OrderItem, Payment 모델
+│   ├── order.py               # Order(회원/비회원 통합), OrderItem, OrderAccommodation, Payment 모델
 │   └── review.py              # Review 모델 (별점 1~5점, 제목, 내용)
 │
 ├── forms/                     # [입력 폼 검증 분리]
@@ -117,13 +124,13 @@ d:\hongdonjoo\travel\
 │   │   └── login.html         # 로그인 폼 화면
 │   ├── product/
 │   │   ├── list.html          # 권역/테마/정렬 필터링 여행 상품 목록
-│   │   ├── detail.html        # 상품 상세 (회원가/비회원 바로구매, 후기 목록)
+│   │   ├── detail.html        # 상품 상세 (회원가/비회원 바로구매, 숙박 연계 예약, 후기 목록)
 │   │   └── popular.html       # 🏆 실시간 추천 TOP 랭킹 순위 화면
 │   ├── cart/
 │   │   └── index.html         # 🛒 내 장바구니 (회원 우대 할인 실시간 반영)
 │   ├── order/
-│   │   ├── checkout.html      # 주문/결제 화면 (회원/비회원 입력 분기)
-│   │   ├── complete.html      # 결제 완료 영수증 화면
+│   │   ├── checkout.html      # 주문/결제 화면 (회원/비회원 입력 분기, 연계 숙박 확인)
+│   │   ├── complete.html      # 결제 완료 영수증 화면 (투어 및 예약 숙박 영수증)
 │   │   └── history.html       # 내 주문 내역 화면
 │   └── review/
 │       └── create.html        # ✏️ 회원 전용 여행 후기 작성 화면
@@ -134,7 +141,7 @@ d:\hongdonjoo\travel\
 │   └── img/                   # 지도 레이어 PNG 이미지 및 기본 썸네일
 │
 └── tests/
-    └── test_app.py            # 7대 핵심 기능 자동화 단위 테스트 스위트
+    └── test_app.py            # 8대 핵심 기능 자동화 단위 테스트 스위트 (총 9개 테스트 통과)
 ```
 
 ---
@@ -172,6 +179,7 @@ flowchart LR
             M4(["UC-M04: 회원 우대 할인 결제\n(10~20% 특별 할인가 적용)"])
             M5(["UC-M05: 내 예약 및 주문 내역 조회"])
             M6(["UC-M06: 여행 후기 작성 및 삭제\n(별점 1~5점)"])
+            M7(["UC-M07: 추천 숙박 연계 예약\n([민박][호텔] 각 최대 2개 선택)"])
         end
 
         %% 3. 결제 처리 영역
@@ -195,6 +203,7 @@ flowchart LR
     Member --> M4
     Member --> M5
     Member --> M6
+    Member --> M7
     Member -.->|기본 탐색 활용| G3
     Member -.->|랭킹 탐색 활용| G4
     Member -.->|후기 열람 활용| G5
@@ -202,6 +211,7 @@ flowchart LR
     %% Payment Relations
     G6 -.->|<<include>> 정가 결제| PayProcess
     M4 -.->|<<include>> 할인가 결제| PayProcess
+    M7 -.->|<<extend>> 숙박 포함 주문| M4
     PayProcess --- PG
 ```
 
@@ -346,6 +356,33 @@ classDiagram
         +datetime created_at
     }
 
+    class Accommodation {
+        +int id PK
+        +string name "숙소명"
+        +string acc_type "민박, 호텔"
+        +RegionEnum region "권역"
+        +int price_per_night "1박 요금"
+        +float member_discount_rate "회원 할인율"
+        +float rating "평점"
+        +string features "편의시설 태그"
+        +string image_url
+        +string description
+        +bool is_recommended
+        +get_discounted_price(is_member: bool) int
+        +get_discount_amount(is_member: bool) int
+        +get_feature_list() list
+    }
+
+    class OrderAccommodation {
+        +int id PK
+        +int order_id FK
+        +int accommodation_id FK
+        +int nights "박수"
+        +int unit_price "1박 단가"
+        +int discount_applied "할인액"
+        +int subtotal_price "소계"
+    }
+
     %% Relationships
     User "1" -- "1" Cart : owns
     Cart "1" --> "0..*" CartItem : contains
@@ -357,6 +394,9 @@ classDiagram
     User "0..1" --> "0..*" Order : places
     Order "1" --> "1..*" OrderItem : includes
     TourProduct "1" --> "0..*" OrderItem : ordered_in
+
+    Order "1" --> "0..*" OrderAccommodation : reserves
+    Accommodation "1" --> "0..*" OrderAccommodation : booked_in
 
     User "1" --> "0..*" Review : writes
     TourProduct "1" --> "0..*" Review : has
@@ -382,6 +422,8 @@ erDiagram
     USERS |o--o{ ORDERS : "주문 (0..1:N, 비회원 허용)"
     ORDERS ||--|{ ORDER_ITEMS : "주문 품목 포함 (1:N)"
     TOUR_PRODUCTS ||--o{ ORDER_ITEMS : "주문됨 (1:N)"
+    ORDERS ||--o{ ORDER_ACCOMMODATIONS : "숙박 예약 포함 (1:N)"
+    ACCOMMODATIONS ||--o{ ORDER_ACCOMMODATIONS : "예약됨 (1:N)"
     ORDERS ||--|| PAYMENTS : "결제 매핑 (1:1)"
 
     USERS ||--o{ REVIEWS : "작성 (1:N)"
@@ -417,6 +459,21 @@ erDiagram
         int recommendation_count "누적 추천수"
         varchar image_url "대표 이미지"
         text image_urls "다중 이미지 JSON 목록"
+        datetime created_at "등록일시"
+    }
+
+    ACCOMMODATIONS {
+        int id PK "숙박 식별 번호"
+        varchar name "숙소명"
+        varchar acc_type "유형 (민박, 호텔)"
+        varchar region "소속 권역"
+        int price_per_night "1박 정상가"
+        float member_discount_rate "회원 할인율"
+        float rating "평점"
+        varchar features "편의시설 특징 태그"
+        varchar image_url "대표 이미지"
+        text description "숙소 소개"
+        boolean is_recommended "추천 여부"
         datetime created_at "등록일시"
     }
 
@@ -465,6 +522,16 @@ erDiagram
         int subtotal_price "소계"
     }
 
+    ORDER_ACCOMMODATIONS {
+        int id PK "숙박 주문 번호"
+        int order_id FK "주문 ID"
+        int accommodation_id FK "숙박 ID"
+        int nights "투숙 박수"
+        int unit_price "1박 단가"
+        int discount_applied "박당 할인액"
+        int subtotal_price "소계"
+    }
+
     PAYMENTS {
         int id PK "결제 번호"
         int order_id FK "주문 ID (Unique)"
@@ -499,11 +566,11 @@ erDiagram
 pip install -r requirements.txt
 ```
 
-### 3) 초기 데이터 시딩 (6개 권역 36개 상품 및 리뷰 적재)
+### 3) 초기 데이터 시딩 (6개 권역 36개 관광 상품 & 36개 추천 숙박시설)
 ```powershell
 python seed_data.py
 ```
-> 실행 시 테마 3종, 테스트 계정 5개, 6개 지역 관광 상품 36개 및 실제 후기들이 데이터베이스(`travel.db`)에 자동 등록됩니다.
+> 실행 시 테마 3종, 테스트 계정 5개, 6개 지역 관광 상품 36개(각 3~4장 이상 사진), 권역별 추천 숙박 시설 36개([민박] 18개, [호텔] 18개) 및 실제 여행 후기들이 데이터베이스(`travel.db`)에 자동 등록됩니다.
 
 ### 4) 웹 애플리케이션 실행
 ```powershell
@@ -521,16 +588,16 @@ python app.py
 
 | 구분 | 아이디 | 비밀번호 | 이름 | 혜택 및 권한 |
 | :--- | :--- | :--- | :--- | :--- |
-| **기본 회원** | `hong` | `12341234` | 홍길동 | 전 권역 여행 상품 **10~20% 특별 할인**, 장바구니 담기, 상품 추천(❤️), 후기 작성 |
+| **기본 회원** | `hong` | `12341234` | 홍길동 | 전 권역 여행 상품 **10~20% 특별 할인**, **추천 숙박([민박][호텔] 각 최대 2개) 연계 예약**, 장바구니 담기, 상품 추천(❤️), 후기 작성 |
 | **추가 회원** | `traveler_kim` | `12341234` | 김여행 | 일반 회원 권한 |
 
-> **비회원 테스트**: 로그인하지 않은 상태에서도 모든 관광 코스 둘러보기, 랭킹 보기, 후기 읽기, **[비회원 바로 구매하기 (정가)]**가 가능합니다.
+> **비회원 테스트**: 로그인하지 않은 상태에서도 모든 관광 코스 둘러보기, 랭킹 보기, 후기 읽기, **[비회원 바로 구매하기 (정가)]**가 가능하며, 숙박 예약 시에는 회원가입/로그인 유도 안내가 제공됩니다.
 
 ---
 
 ## 7. 자동화 단위 테스트 (Unit Tests)
 
-프로젝트의 핵심 비즈니스 로직(회원가입, 로그인, 지역/테마 필터, 추천수 랭킹, 장바구니 할인, 회원/비회원 결제, 후기 권한 제어)을 검증하는 7종의 단위 테스트가 포함되어 있습니다.
+프로젝트의 핵심 비즈니스 로직(회원가입, 로그인, 지역/테마 필터, 추천수 랭킹, 장바구니 할인, 회원/비회원 결제, 후기 권한 제어, 다중 사진 슬라이더, 숙박 연계 예약)을 검증하는 9종의 단위 테스트가 완벽히 통과합니다.
 
 ### 테스트 실행 명령:
 ```powershell
@@ -539,9 +606,9 @@ python -m unittest tests/test_app.py
 
 ### 검증 결과:
 ```text
-.......
+.........
 ----------------------------------------------------------------------
-Ran 7 tests in 1.676s
+Ran 9 tests in 2.950s
 
 OK
 ```
@@ -550,6 +617,8 @@ OK
 3. `test_popular_ranking_screen`: 누적 추천수 내림차순 정렬 및 TOP 랭킹 표출
 4. `test_cart_and_member_discount`: 장바구니 품목 수량별 회원 할인액 차감 및 실시간 결제액 정산
 5. `test_checkout_and_payment`: 회원 할인 적용 주문 생성, 영수증 보존, 모의 결제 완료 트랜잭션
-6. `test_guest_direct_checkout_and_payment`: **비회원 바로 구매 버튼, 정가 결제 진행, 비회원 예약자 정보 저장 및 주문 완료**
+6. `test_guest_direct_checkout_and_payment`: 비회원 바로 구매 버튼, 정가 결제 진행, 비회원 예약자 정보 저장 및 주문 완료
 7. `test_review_permission`: 비회원의 후기 작성 차단(로그인 유도) 및 회원의 별점/후기 등록 권한
+8. `test_multi_image_slider_and_retrieval`: 다중 이미지 저장/조회, 캐러셀 렌더링 및 메인 사진 개수 배지 검증
+9. `test_member_accommodation_booking_and_checkout`: **회원 전용 숙박([민박][호텔] 각 최대 2개) 연계 예약, 실시간 합산 금액, 체크아웃 및 OrderAccommodation DB 스냅샷 검증**
 

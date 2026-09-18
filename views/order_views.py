@@ -2,9 +2,9 @@ import uuid
 from flask import Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import login_required, current_user
 from extensions import db
-from models.tour import TourProduct
+from models.tour import TourProduct, Accommodation
 from models.cart import Cart
-from models.order import Order, OrderItem, Payment
+from models.order import Order, OrderItem, Payment, OrderAccommodation
 
 order_bp = Blueprint('order', __name__, url_prefix='/order')
 
@@ -56,11 +56,39 @@ def checkout():
             total_original += subtotal_orig
             total_final += subtotal_fin
 
+    # 회원 전용 연계 숙박 예약 항목 조회 (acc_ids)
+    acc_ids_str = request.args.get('acc_ids', '').strip()
+    selected_accommodations = []
+    acc_original_total = 0
+    acc_final_total = 0
+
+    if is_member and acc_ids_str:
+        acc_ids = [int(x.strip()) for x in acc_ids_str.split(',') if x.strip().isdigit()]
+        if acc_ids:
+            accommodations = Accommodation.query.filter(Accommodation.id.in_(acc_ids)).all()
+            for acc in accommodations:
+                orig_p = acc.price_per_night
+                fin_p = acc.get_discounted_price(is_member=True)
+                disc_p = acc.get_discount_amount(is_member=True)
+                acc_original_total += orig_p
+                acc_final_total += fin_p
+                selected_accommodations.append({
+                    'accommodation': acc,
+                    'nights': 1,
+                    'original_price': orig_p,
+                    'final_price': fin_p,
+                    'discount_amount': disc_p
+                })
+
+    total_original += acc_original_total
+    total_final += acc_final_total
     total_discount = total_original - total_final
 
     return render_template(
         'order/checkout.html',
         items=items_to_checkout,
+        selected_accommodations=selected_accommodations,
+        acc_ids=acc_ids_str,
         total_original=total_original,
         total_discount=total_discount,
         total_final=total_final,
@@ -132,6 +160,28 @@ def process_payment():
                 'subtotal_price': subtotal
             })
 
+    # 회원 연계 숙박 결제 처리
+    acc_ids_str = request.form.get('acc_ids', '').strip()
+    order_accommodations_data = []
+
+    if is_member and acc_ids_str:
+        acc_ids = [int(x.strip()) for x in acc_ids_str.split(',') if x.strip().isdigit()]
+        if acc_ids:
+            accommodations = Accommodation.query.filter(Accommodation.id.in_(acc_ids)).all()
+            for acc in accommodations:
+                orig_p = acc.price_per_night
+                fin_p = acc.get_discounted_price(is_member=True)
+                disc_p = acc.get_discount_amount(is_member=True)
+                total_orig += orig_p
+                total_fin += fin_p
+                order_accommodations_data.append({
+                    'accommodation_id': acc.id,
+                    'nights': 1,
+                    'unit_price': fin_p,
+                    'discount_applied': disc_p,
+                    'subtotal_price': fin_p
+                })
+
     total_discount = total_orig - total_fin
 
     # 주문 객체 생성 (회원/비회원 공통)
@@ -160,6 +210,18 @@ def process_payment():
             subtotal_price=item_data['subtotal_price']
         )
         db.session.add(order_item)
+
+    # 연계 숙박 예약 항목 생성
+    for acc_data in order_accommodations_data:
+        order_acc = OrderAccommodation(
+            order_id=order.id,
+            accommodation_id=acc_data['accommodation_id'],
+            nights=acc_data['nights'],
+            unit_price=acc_data['unit_price'],
+            discount_applied=acc_data['discount_applied'],
+            subtotal_price=acc_data['subtotal_price']
+        )
+        db.session.add(order_acc)
 
     # 모의 결제 트랜잭션 기록
     payment = Payment(

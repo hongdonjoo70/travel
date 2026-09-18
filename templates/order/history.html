@@ -25,10 +25,20 @@
             {% for item in o.items %}
               <div class="order-item-line">
                 <span class="product-name">
-                  <a href="{{ url_for('product.detail', product_id=item.product.id) }}">{{ item.product.name }}</a>
+                  🎟️ <a href="{{ url_for('product.detail', product_id=item.product.id) }}">{{ item.product.name }}</a>
                 </span>
                 <span class="product-details">
                   수량: {{ item.quantity }}개 | 소계: {{ "{:,}".format(item.subtotal_price) }}원
+                </span>
+              </div>
+            {% endfor %}
+            {% for acc_item in o.accommodations %}
+              <div class="order-item-line acc-line">
+                <span class="product-name">
+                  🏨 [{{ acc_item.accommodation.acc_type }}] {{ acc_item.accommodation.name }}
+                </span>
+                <span class="product-details">
+                  {{ acc_item.nights }}박 | 소계: {{ "{:,}".format(acc_item.subtotal_price) }}원
                 </span>
               </div>
             {% endfor %}

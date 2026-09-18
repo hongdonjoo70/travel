@@ -55,10 +55,18 @@
       <h3>예약 완료된 상품</h3>
       {% for item in order.items %}
         <div class="complete-item">
-          <span>{{ item.product.name }} ({{ item.product.region }})</span>
+          <span>🎟️ [투어] {{ item.product.name }} ({{ item.product.region }})</span>
           <span>{{ item.quantity }}개 / {{ "{:,}".format(item.subtotal_price) }}원</span>
         </div>
       {% endfor %}
+      {% if order.accommodations.count() > 0 %}
+        {% for acc_item in order.accommodations %}
+          <div class="complete-item">
+            <span>🏨 [숙박 - {{ acc_item.accommodation.acc_type }}] {{ acc_item.accommodation.name }} ({{ acc_item.accommodation.region }})</span>
+            <span>{{ acc_item.nights }}박 / {{ "{:,}".format(acc_item.subtotal_price) }}원</span>
+          </div>
+        {% endfor %}
+      {% endif %}
     </div>
 
     <div class="complete-actions">

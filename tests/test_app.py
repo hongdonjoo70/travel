@@ -3,9 +3,9 @@ from app import create_app
 from config import Config
 from extensions import db
 from models.user import User
-from models.tour import Theme, TourProduct, RegionEnum, ProductLike
+from models.tour import Theme, TourProduct, RegionEnum, ProductLike, Accommodation
 from models.cart import Cart, CartItem
-from models.order import Order
+from models.order import Order, OrderAccommodation
 from models.review import Review
 
 class TestConfig(Config):
@@ -275,6 +275,149 @@ class TravelAppTestCase(unittest.TestCase):
         list_html = res_list.get_data(as_text=True)
         self.assertIn('badge-photos', list_html)
         self.assertIn('4장', list_html)
+
+    def test_member_accommodation_booking_and_checkout(self):
+        """8. 회원 전용 숙박([민박][호텔] 각 최대 2개) 연계 예약 및 결제 통합 테스트"""
+        # 1) 숙박 시설 테스트 데이터 생성 (제주 지역 민박 2개, 호텔 2개)
+        mb1 = Accommodation(
+            name='제주 돌담 스테이',
+            acc_type='민박',
+            region='제주',
+            price_per_night=70000,
+            member_discount_rate=0.15, # 15% 할인 -> 59,500원
+            rating=4.8,
+            features='독채,오션뷰,조식무료',
+            image_url='https://example.com/mb1.jpg',
+            description='아늑한 제주 전통 돌담 독채 민박',
+            is_recommended=True
+        )
+        mb2 = Accommodation(
+            name='제주 올레길 쉼터 민박',
+            acc_type='민박',
+            region='제주',
+            price_per_night=60000,
+            member_discount_rate=0.10, # 10% 할인 -> 54,000원
+            rating=4.6,
+            features='바베큐,정원',
+            image_url='https://example.com/mb2.jpg',
+            description='올레길 코스 인근 감성 민박',
+            is_recommended=True
+        )
+        ht1 = Accommodation(
+            name='제주 오션팰리스 호텔',
+            acc_type='호텔',
+            region='제주',
+            price_per_night=180000,
+            member_discount_rate=0.20, # 20% 할인 -> 144,000원
+            rating=4.9,
+            features='인피니티풀,피트니스,스파',
+            image_url='https://example.com/ht1.jpg',
+            description='환상적인 바다 전망의 특급 호텔',
+            is_recommended=True
+        )
+        ht2 = Accommodation(
+            name='서귀포 하얏트 리조트 호텔',
+            acc_type='호텔',
+            region='제주',
+            price_per_night=200000,
+            member_discount_rate=0.15, # 15% 할인 -> 170,000원
+            rating=4.7,
+            features='수영장,조식뷔페',
+            image_url='https://example.com/ht2.jpg',
+            description='서귀포 중문 관광단지 최고급 리조트',
+            is_recommended=True
+        )
+        db.session.add_all([mb1, mb2, ht1, ht2])
+        db.session.commit()
+
+        # 2) 모델 헬퍼 메서드 검증
+        self.assertEqual(mb1.get_discounted_price(True), 59500)
+        self.assertEqual(mb1.get_discount_amount(True), 10500)
+        self.assertEqual(mb1.get_feature_list(), ['독채', '오션뷰', '조식무료'])
+        self.assertEqual(ht1.get_discounted_price(True), 144000)
+
+        # 3) 비회원 상태에서 상품 상세 접속 검증 (비회원 안내 배너 확인, 체크박스 비활성)
+        guest_res = self.client.get(f'/products/{self.p1.id}')
+        self.assertEqual(guest_res.status_code, 200)
+        guest_html = guest_res.get_data(as_text=True)
+        self.assertIn('acc-guest-prompt-banner', guest_html)
+        self.assertIn('로그인하시면 위 추천 민박 및 호텔을 최대 2개씩 회원 특별 할인가로 함께 예약하실 수 있습니다!', guest_html)
+        self.assertIn('회원전용', guest_html)
+
+        # 4) 회원 가입 및 로그인
+        self.client.post('/auth/signup', data={
+            'username': 'lodging_lover',
+            'name': '숙박여행가',
+            'email': 'lodging@travel.com',
+            'phone': '010-9999-1111',
+            'password': 'password123',
+            'confirm_password': 'password123'
+        })
+        self.client.post('/auth/login', data={'username': 'lodging_lover', 'password': 'password123'})
+
+        # 5) 회원 상세 접속 검증 (민박/호텔 추천 카드 노출 및 실시간 예약 바 렌더링 확인)
+        member_res = self.client.get(f'/products/{self.p1.id}')
+        self.assertEqual(member_res.status_code, 200)
+        member_html = member_res.get_data(as_text=True)
+        self.assertIn('accSummaryBar', member_html)
+        self.assertIn('제주 돌담 스테이', member_html)
+        self.assertIn('제주 오션팰리스 호텔', member_html)
+        self.assertIn(f'accCheck-{mb1.id}', member_html)
+        self.assertIn(f'accCheck-{ht1.id}', member_html)
+        self.assertIn('선택: <strong id="minbakCountBadge">0</strong> / 2개', member_html)
+        self.assertIn('선택: <strong id="hotelCountBadge">0</strong> / 2개', member_html)
+
+        # 6) 숙박 2종(민박 1개 + 호텔 1개) 포함 주문서(Checkout) 접근 검증
+        # 관광상품 1인 회원가: 80,000원
+        # mb1 회원가: 59,500원
+        # ht1 회원가: 144,000원
+        # 합계: 80,000 + 59,500 + 144,000 = 283,500원
+        # 정가 합계: 100,000 + 70,000 + 180,000 = 350,000원
+        checkout_url = f'/order/checkout?product_id={self.p1.id}&quantity=1&acc_ids={mb1.id},{ht1.id}'
+        checkout_res = self.client.get(checkout_url)
+        self.assertEqual(checkout_res.status_code, 200)
+        checkout_html = checkout_res.get_data(as_text=True)
+        self.assertIn('연계 숙박 예약 내역 (회원 우대)', checkout_html)
+        self.assertIn('제주 돌담 스테이', checkout_html)
+        self.assertIn('제주 오션팰리스 호텔', checkout_html)
+        self.assertIn('283,500원', checkout_html)
+
+        # 7) 결제 요청 (POST /order/pay)
+        pay_res = self.client.post('/order/pay', data={
+            'direct_product_id': self.p1.id,
+            'quantity': 1,
+            'acc_ids': f'{mb1.id},{ht1.id}',
+            'payment_method': 'CARD'
+        }, follow_redirects=True)
+        self.assertEqual(pay_res.status_code, 200)
+        pay_html = pay_res.get_data(as_text=True)
+        self.assertIn('결제가 성공적으로 완료되었습니다', pay_html)
+        self.assertIn('283,500원', pay_html)
+        self.assertIn('제주 돌담 스테이', pay_html)
+        self.assertIn('제주 오션팰리스 호텔', pay_html)
+
+        # 8) DB 주문 및 숙박 매핑(OrderAccommodation) 검증
+        user = User.query.filter_by(username='lodging_lover').first()
+        order = Order.query.filter_by(user_id=user.id).first()
+        self.assertIsNotNone(order)
+        self.assertEqual(order.original_amount, 350000)
+        self.assertEqual(order.discount_amount, 66500)
+        self.assertEqual(order.final_amount, 283500)
+        self.assertEqual(order.payment.paid_amount, 283500)
+
+        # 연계된 숙박 레코드 2개 확인
+        self.assertEqual(order.accommodations.count(), 2)
+        booked_acc_ids = [oa.accommodation_id for oa in order.accommodations]
+        self.assertIn(mb1.id, booked_acc_ids)
+        self.assertIn(ht1.id, booked_acc_ids)
+
+        # 9) 마이페이지 주문 내역(/order/history) 확인
+        history_res = self.client.get('/order/history')
+        self.assertEqual(history_res.status_code, 200)
+        history_html = history_res.get_data(as_text=True)
+        self.assertIn('제주 돌담 스테이', history_html)
+        self.assertIn('제주 오션팰리스 호텔', history_html)
+        self.assertIn('283,500원', history_html)
 
 if __name__ == '__main__':
     unittest.main()

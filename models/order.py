@@ -19,6 +19,7 @@ class Order(db.Model):
 
     # Relationships
     items = db.relationship('OrderItem', backref='order', lazy='dynamic', cascade='all, delete-orphan')
+    accommodations = db.relationship('OrderAccommodation', backref='order', lazy='dynamic', cascade='all, delete-orphan')
     payment = db.relationship('Payment', backref='order', uselist=False, cascade='all, delete-orphan')
 
     @classmethod
@@ -63,3 +64,23 @@ class Payment(db.Model):
     transaction_id = db.Column(db.String(100), unique=True, nullable=False)
     status = db.Column(db.String(20), default='SUCCESS') # SUCCESS, FAILED, CANCELLED
     paid_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+
+class OrderAccommodation(db.Model):
+    """회원이 관광 상품과 함께 연계 예약한 숙박 시설 내역"""
+    __tablename__ = 'order_accommodations'
+
+    id = db.Column(db.Integer, primary_key=True)
+    order_id = db.Column(db.Integer, db.ForeignKey('orders.id', ondelete='CASCADE'), nullable=False)
+    accommodation_id = db.Column(db.Integer, db.ForeignKey('accommodations.id'), nullable=False)
+    nights = db.Column(db.Integer, default=1, nullable=False)
+    unit_price = db.Column(db.Integer, nullable=False) # 1박 회원 결제 금액
+    discount_applied = db.Column(db.Integer, default=0) # 1박당 회원 할인액
+    subtotal_price = db.Column(db.Integer, nullable=False) # 총 숙박 금액 (unit_price * nights)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+
+    # Relationships
+    accommodation = db.relationship('Accommodation', backref='order_bookings')
+
+    def __repr__(self):
+        return f"<OrderAccommodation order_id={self.order_id} acc_id={self.accommodation_id} subtotal={self.subtotal_price}>"
+

@@ -21,6 +21,8 @@ erDiagram
     USERS |o--o{ ORDERS : "주문 (0..1:N, 비회원 허용)"
     ORDERS ||--|{ ORDER_ITEMS : "주문 품목 포함 (1:N)"
     TOUR_PRODUCTS ||--o{ ORDER_ITEMS : "주문됨 (1:N)"
+    ORDERS ||--o{ ORDER_ACCOMMODATIONS : "숙박 예약 포함 (1:N)"
+    ACCOMMODATIONS ||--o{ ORDER_ACCOMMODATIONS : "예약됨 (1:N)"
     ORDERS ||--|| PAYMENTS : "결제 매핑 (1:1)"
 
     USERS ||--o{ REVIEWS : "작성 (1:N)"
@@ -57,6 +59,21 @@ erDiagram
         int recommendation_count "누적 추천 수 (Default 0)"
         varchar image_url "대표 이미지 경로/URL"
         text image_urls "다중 고화질 사진 JSON URL 목록"
+        datetime created_at "등록 일시"
+    }
+
+    ACCOMMODATIONS {
+        int id PK "숙박 시설 고유 번호 (Auto Increment)"
+        varchar name "숙소 이름 (Not Null)"
+        varchar acc_type "숙박 유형 (민박, 호텔)"
+        varchar region "지역 권역 (서울/경기, 강원, 제주 등)"
+        int price_per_night "1박 정상 요금 (원)"
+        float member_discount_rate "회원 우대 할인율 (예: 0.15 = 15%)"
+        float rating "숙소 평점 (예: 4.8)"
+        varchar features "주요 편의 특징 태그 (쉼표 구분)"
+        varchar image_url "숙소 대표 이미지 URL"
+        text description "숙소 소개 설명"
+        boolean is_recommended "추천 여부 (Default True)"
         datetime created_at "등록 일시"
     }
 
@@ -103,6 +120,16 @@ erDiagram
         int unit_price "주문 시점 적용 단가 (원)"
         int discount_applied "개당 할인 적용액 (원)"
         int subtotal_price "항목별 소계 금액 (원)"
+    }
+
+    ORDER_ACCOMMODATIONS {
+        int id PK "주문 숙박 상세 번호 (Auto Increment)"
+        int order_id FK "연결된 주문 ID (orders.id, Cascade)"
+        int accommodation_id FK "예약된 숙박 ID (accommodations.id)"
+        int nights "투숙 박수 (기본 1박)"
+        int unit_price "주문 시점 적용 1박 단가 (원)"
+        int discount_applied "박당 할인 적용액 (원)"
+        int subtotal_price "숙박 소계 금액 (원)"
     }
 
     PAYMENTS {
@@ -278,14 +305,53 @@ erDiagram
 
 ---
 
+### 2.9. `accommodations` (추천 숙박 시설)
+- **설명**: 6대 권역별 회원 우대 연계 예약 숙박 시설 ([민박] 및 [호텔]) 정보 관리
+
+| 컬럼명 | 데이터 타입 | 제약 조건 | 기본값 | 설명 |
+| :--- | :--- | :--- | :--- | :--- |
+| `id` | `INTEGER` | PK, Auto Increment | - | 숙박 시설 식별 고유 번호 |
+| `name` | `VARCHAR(120)` | NOT NULL | - | 숙소 명칭 |
+| `acc_type` | `VARCHAR(20)` | NOT NULL | - | 숙박 유형 (`'민박'` 또는 `'호텔'`) |
+| `region` | `VARCHAR(50)` | NOT NULL | - | 소속 권역 (`서울/경기`, `강원`, `제주` 등) |
+| `price_per_night` | `INTEGER` | NOT NULL | - | 1박 정상 요금 (원) |
+| `member_discount_rate` | `FLOAT` | NOT NULL | `0.10` | 회원 우대 할인율 (예: `0.15` = 15%) |
+| `rating` | `FLOAT` | NOT NULL | `4.5` | 숙소 이용 평점 (1.0 ~ 5.0) |
+| `features` | `VARCHAR(255)` | NULLABLE | - | 편의시설 및 특징 키워드 (쉼표 구분 태그) |
+| `image_url` | `VARCHAR(300)` | NULLABLE | - | 숙소 대표 이미지 URL |
+| `description` | `TEXT` | NULLABLE | - | 숙소 소개 및 매력 포인트 설명 |
+| `is_recommended` | `BOOLEAN` | NOT NULL | `True` | 추천 전시 여부 |
+| `created_at` | `DATETIME` | NOT NULL | `CURRENT_TIMESTAMP` | 숙소 정보 등록 일시 |
+
+---
+
+### 2.10. `order_accommodations` (주문 연계 숙박 내역)
+- **설명**: 회원이 관광 투어 상품과 함께 연계 예약한 숙박 시설의 주문 시점 가격 및 예약 내역 (1:N 매핑)
+
+| 컬럼명 | 데이터 타입 | 제약 조건 | 설명 |
+| :--- | :--- | :--- | :--- |
+| `id` | `INTEGER` | PK, Auto Increment | 주문 숙박 식별 번호 |
+| `order_id` | `INTEGER` | FK (`orders.id`, CASCADE), NOT NULL | 연결된 주문 ID |
+| `accommodation_id` | `INTEGER` | FK (`accommodations.id`), NOT NULL | 예약된 숙박 시설 ID |
+| `nights` | `INTEGER` | NOT NULL, 기본 1 | 투숙 박수 (기본 1박) |
+| `unit_price` | `INTEGER` | NOT NULL | 예약 시점 1박 정상 단가 (원) |
+| `discount_applied` | `INTEGER` | NOT NULL, 기본 0 | 회원 우대 박당 할인액 (원) |
+| `subtotal_price` | `INTEGER` | NOT NULL | 숙박 최종 결제 소계 금액 (원) |
+
+---
+
 ## 3. 주요 무결성 및 관계 설계 특징
 
 1. **회원/비회원 주문 통합 설계 (`orders`)**:
    - `user_id` 컬럼을 `NULLABLE`로 지정하여, 회원 주문뿐만 아니라 비회원의 **[비회원 바로 구매하기]** 주문도 한 테이블에서 통합 관리합니다.
    - 비회원일 경우 `guest_name`, `guest_email`, `guest_phone`을 보관하며 `discount_amount = 0`으로 정가 결제됩니다.
 2. **외래키 제약조건 및 연쇄 삭제 (CASCADE)**:
-   - 회원이 탈퇴(`User` 삭제)할 경우 해당 회원의 장바구니(`Cart`), 작성 후기(`Review`), 추천 이력(`ProductLike`)이 자동 연쇄 삭제되도록 `ondelete='CASCADE'`가 지정되어 데이터 고아(Orphan) 현상을 방지합니다.
+   - 회원이 탈퇴(`User` 삭제)할 경우 해당 회원의 장바구니(`Cart`), 작성 후기(`Review`), 추천 이력(`ProductLike`), 주문 연계 숙박(`OrderAccommodation`)이 안전하게 연쇄 처리되어 고아(Orphan) 데이터를 방지합니다.
 3. **1인 1회 추천 무결성 (`ProductLike`)**:
    - `(user_id, product_id)`의 복합 유니크 인덱스를 통해 동일 상품에 대한 중복 추천을 DB 레벨에서 완벽하게 차단합니다.
-4. **결제 이력 불변성 (`OrderItem` 금액 스냅샷)**:
-   - 관광 상품의 가격이나 회원 할인율이 향후 변경되더라도, 과거 주문 내역의 `unit_price`, `discount_applied`, `subtotal_price`는 주문 시점의 스냅샷 가격 그대로 보존됩니다.
+4. **결제 이력 불변성 (`OrderItem`, `OrderAccommodation` 스냅샷)**:
+   - 관광 상품이나 숙박 시설의 가격, 회원 할인율이 향후 변경되더라도, 과거 주문 내역의 `unit_price`, `discount_applied`, `subtotal_price`는 주문 시점의 스냅샷 가격 그대로 불변 보존됩니다.
+5. **회원 전용 숙박 연계 예약 및 카테고리별 최대 2개 선택 제약**:
+   - 관광 상품 상세 화면에서 [민박]과 [호텔] 카테고리별로 각각 **최대 2개까지** 선택할 수 있도록 UI와 컨트롤러에서 철저히 검증 및 제한합니다.
+   - 선택된 숙박 시설은 단일 트랜잭션으로 주문서 결제 및 `OrderAccommodation` 테이블에 안전하게 적재됩니다.
+

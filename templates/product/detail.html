@@ -145,8 +145,13 @@
           </form>
           <script>
             function goToMemberCheckout() {
-              const qty = document.getElementById('memberQuantity').value || 1;
-              location.href = "{{ url_for('order.checkout', product_id=product.id) }}&quantity=" + qty;
+              const qty = document.getElementById('memberQuantity') ? (document.getElementById('memberQuantity').value || 1) : 1;
+              const checkedAccs = Array.from(document.querySelectorAll('.acc-checkbox:checked')).map(cb => cb.dataset.id);
+              let url = "{{ url_for('order.checkout', product_id=product.id) }}&quantity=" + qty;
+              if (checkedAccs.length > 0) {
+                url += "&acc_ids=" + checkedAccs.join(',');
+              }
+              location.href = url;
             }
           </script>
         {% else %}
@@ -184,6 +189,172 @@
       </div>
     </div>
   </div>
+
+  <!-- [회원 전용] 연계 추천 숙박 시설 ([민박] & [호텔]) 예약 섹션 -->
+  <section class="accommodation-section" id="accommodationSection">
+    <div class="acc-section-header">
+      <div class="acc-title-group">
+        <span class="acc-pill-badge">✨ 회원 우대 연계 서비스</span>
+        <h2>🏡🏨 [{{ product.region }}] 추천 숙박 연계 예약</h2>
+        <p class="acc-subtitle">
+          여행 일정에 맞춰 머무실 숙소를 선택해 보세요. <strong>[민박]</strong>과 <strong>[호텔]</strong> 각 항목별로 <strong>최대 2개까지</strong> 선택하실 수 있습니다.
+        </p>
+      </div>
+      {% if not current_user.is_authenticated %}
+        <div class="acc-login-badge">
+          🔒 회원 전용 서비스 (<a href="{{ url_for('auth.login', next=request.path) }}">로그인</a> 후 예약 가능)
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- 2단 카테고리 그리드 ([민박] / [호텔]) -->
+    <div class="acc-category-grid">
+      <!-- 1) [민박 추천] 컬럼 -->
+      <div class="acc-category-col">
+        <div class="category-header minbak-header">
+          <div class="cat-title-wrap">
+            <span class="cat-icon">🏡</span>
+            <h3>추천 민박</h3>
+          </div>
+          <span class="cat-limit-badge">
+            선택: <strong id="minbakCountBadge">0</strong> / 2개
+          </span>
+        </div>
+
+        <div class="acc-cards-list">
+          {% for acc in recommended_minbaks %}
+            <div class="acc-card" id="accCard-{{ acc.id }}">
+              <div class="acc-thumb-box">
+                <img src="{{ acc.image_url }}" alt="{{ acc.name }}" class="acc-thumb-img" onerror="this.src='/static/img/default-tour.jpg'">
+                <span class="badge-acc-type type-minbak">민박</span>
+              </div>
+              <div class="acc-info-box">
+                <div class="acc-top-meta">
+                  <span class="acc-score">⭐ {{ acc.rating }}</span>
+                  <span class="acc-region-tag">{{ acc.region }}</span>
+                </div>
+                <h4 class="acc-card-title">{{ acc.name }}</h4>
+                <p class="acc-card-desc">{{ acc.description }}</p>
+                <div class="acc-tags-list">
+                  {% for feat in acc.get_feature_list() %}
+                    <span class="tag-chip">#{{ feat }}</span>
+                  {% endfor %}
+                </div>
+                <div class="acc-bottom-row">
+                  <div class="acc-price-col">
+                    <span class="acc-orig-st">{{ "{:,}".format(acc.price_per_night) }}원</span>
+                    <span class="acc-mem-price"><strong>{{ "{:,}".format(acc.get_discounted_price(True)) }}원</strong> / 1박</span>
+                  </div>
+                  {% if current_user.is_authenticated %}
+                    <label class="acc-select-btn-label" for="accCheck-{{ acc.id }}">
+                      <input type="checkbox" id="accCheck-{{ acc.id }}" class="acc-checkbox" 
+                             data-type="MINBAK" data-id="{{ acc.id }}" data-name="{{ acc.name }}" 
+                             data-price="{{ acc.get_discounted_price(True) }}"
+                             onchange="handleAccSelection(this)">
+                      <span class="btn-check-text">선택</span>
+                    </label>
+                  {% else %}
+                    <span class="acc-locked-btn">회원전용</span>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- 2) [호텔 추천] 컬럼 -->
+      <div class="acc-category-col">
+        <div class="category-header hotel-header">
+          <div class="cat-title-wrap">
+            <span class="cat-icon">🏨</span>
+            <h3>추천 호텔</h3>
+          </div>
+          <span class="cat-limit-badge">
+            선택: <strong id="hotelCountBadge">0</strong> / 2개
+          </span>
+        </div>
+
+        <div class="acc-cards-list">
+          {% for acc in recommended_hotels %}
+            <div class="acc-card" id="accCard-{{ acc.id }}">
+              <div class="acc-thumb-box">
+                <img src="{{ acc.image_url }}" alt="{{ acc.name }}" class="acc-thumb-img" onerror="this.src='/static/img/default-tour.jpg'">
+                <span class="badge-acc-type type-hotel">호텔</span>
+              </div>
+              <div class="acc-info-box">
+                <div class="acc-top-meta">
+                  <span class="acc-score">⭐ {{ acc.rating }}</span>
+                  <span class="acc-region-tag">{{ acc.region }}</span>
+                </div>
+                <h4 class="acc-card-title">{{ acc.name }}</h4>
+                <p class="acc-card-desc">{{ acc.description }}</p>
+                <div class="acc-tags-list">
+                  {% for feat in acc.get_feature_list() %}
+                    <span class="tag-chip">#{{ feat }}</span>
+                  {% endfor %}
+                </div>
+                <div class="acc-bottom-row">
+                  <div class="acc-price-col">
+                    <span class="acc-orig-st">{{ "{:,}".format(acc.price_per_night) }}원</span>
+                    <span class="acc-mem-price"><strong>{{ "{:,}".format(acc.get_discounted_price(True)) }}원</strong> / 1박</span>
+                  </div>
+                  {% if current_user.is_authenticated %}
+                    <label class="acc-select-btn-label" for="accCheck-{{ acc.id }}">
+                      <input type="checkbox" id="accCheck-{{ acc.id }}" class="acc-checkbox" 
+                             data-type="HOTEL" data-id="{{ acc.id }}" data-name="{{ acc.name }}" 
+                             data-price="{{ acc.get_discounted_price(True) }}"
+                             onchange="handleAccSelection(this)">
+                      <span class="btn-check-text">선택</span>
+                    </label>
+                  {% else %}
+                    <span class="acc-locked-btn">회원전용</span>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <!-- 하단 실시간 합산 예약 바 (회원 전용) -->
+    {% if current_user.is_authenticated %}
+      <div class="acc-summary-bar" id="accSummaryBar">
+        <div class="summary-left">
+          <div class="selection-status">
+            <span>선택 현황: </span>
+            <span class="stat-tag">🏡 민박 <strong id="selectedMinbakText">0</strong> / 2개</span>
+            <span class="stat-tag">🏨 호텔 <strong id="selectedHotelText">0</strong> / 2개</span>
+          </div>
+          <div class="calc-breakdown">
+            투어 (<span id="tourQtyText">1</span>인): <strong>{{ "{:,}".format(product.get_discounted_price(True)) }}원</strong>
+            + 숙박 추가: <strong id="accAddedTotalText">0원</strong>
+            = <span class="calc-final-highlight">총 결제 예정액 <strong id="comboFinalTotalText">{{ "{:,}".format(product.get_discounted_price(True)) }}원</strong></span>
+          </div>
+        </div>
+        <div class="summary-right">
+          <button type="button" class="btn-combo-checkout" onclick="goToMemberCheckout()">
+            선택 숙박과 함께 예약/결제하기 &rarr;
+          </button>
+        </div>
+      </div>
+    {% else %}
+      <div class="acc-guest-prompt-banner">
+        <div class="banner-content">
+          <span class="prompt-icon">💡</span>
+          <div>
+            <strong>로그인하시면 위 추천 민박 및 호텔을 최대 2개씩 회원 특별 할인가로 함께 예약하실 수 있습니다!</strong>
+            <p>회원 가입 즉시 관광 상품 10~20% 및 숙박 시설 우대 할인이 자동 적용됩니다.</p>
+          </div>
+        </div>
+        <div class="banner-btns">
+          <a href="{{ url_for('auth.login', next=request.path) }}" class="btn-primary-sm">로그인</a>
+          <a href="{{ url_for('auth.signup') }}" class="btn-secondary-sm">회원가입</a>
+        </div>
+      </div>
+    {% endif %}
+  </section>
 
   <!-- 하단: 여행 후기(Review) 섹션 -->
   <section class="reviews-section" id="reviews">
@@ -406,6 +577,98 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // 초기 자동 롤링 시작
   startAutoPlay();
+});
+
+// ==========================================
+// [회원 전용] 숙박 시설([민박]/[호텔]) 예약 스크립트
+// ==========================================
+window.handleAccSelection = function(checkbox) {
+  const type = checkbox.dataset.type; // 'MINBAK' or 'HOTEL'
+  const typeLabel = type === 'MINBAK' ? '민박' : '호텔';
+  const checkedInType = document.querySelectorAll('.acc-checkbox[data-type="' + type + '"]:checked');
+  
+  // 최대 2개까지만 선택 가능 검증
+  if (checkedInType.length > 2) {
+    checkbox.checked = false;
+    alert('[' + typeLabel + '] 숙박은 최대 2개까지만 선택하실 수 있습니다.');
+    return false;
+  }
+  
+  // 선택된 카드 시각적 활성화 토글
+  const card = document.getElementById('accCard-' + checkbox.dataset.id);
+  if (card) {
+    if (checkbox.checked) {
+      card.classList.add('selected');
+    } else {
+      card.classList.remove('selected');
+    }
+  }
+  
+  updateAccBookingSummary();
+};
+
+window.updateAccBookingSummary = function() {
+  const minbakChecked = document.querySelectorAll('.acc-checkbox[data-type="MINBAK"]:checked');
+  const hotelChecked = document.querySelectorAll('.acc-checkbox[data-type="HOTEL"]:checked');
+  
+  const minbakCount = minbakChecked.length;
+  const hotelCount = hotelChecked.length;
+  
+  // 상단 카테고리 헤더 카운트 뱃지 업데이트
+  const minbakBadge = document.getElementById('minbakCountBadge');
+  if (minbakBadge) minbakBadge.textContent = minbakCount;
+  const hotelBadge = document.getElementById('hotelCountBadge');
+  if (hotelBadge) hotelBadge.textContent = hotelCount;
+  
+  // 하단 요약 바 텍스트 업데이트
+  const selectedMinbakText = document.getElementById('selectedMinbakText');
+  if (selectedMinbakText) selectedMinbakText.textContent = minbakCount;
+  const selectedHotelText = document.getElementById('selectedHotelText');
+  if (selectedHotelText) selectedHotelText.textContent = hotelCount;
+  
+  // 숙박 추가 합계액 계산
+  let accTotal = 0;
+  const allChecked = document.querySelectorAll('.acc-checkbox:checked');
+  allChecked.forEach(function(cb) {
+    accTotal += parseInt(cb.dataset.price, 10) || 0;
+  });
+  
+  const accAddedTotalText = document.getElementById('accAddedTotalText');
+  if (accAddedTotalText) {
+    accAddedTotalText.textContent = accTotal.toLocaleString() + '원';
+  }
+  
+  // 투어 수량 및 회원 할인가 계산
+  const qtyInput = document.getElementById('memberQuantity');
+  const qty = qtyInput ? (parseInt(qtyInput.value, 10) || 1) : 1;
+  const tourQtyText = document.getElementById('tourQtyText');
+  if (tourQtyText) tourQtyText.textContent = qty;
+  
+  const tourUnitDiscountPrice = {{ product.get_discounted_price(True) }};
+  const tourSubtotal = tourUnitDiscountPrice * qty;
+  const grandTotal = tourSubtotal + accTotal;
+  
+  const comboFinalTotalText = document.getElementById('comboFinalTotalText');
+  if (comboFinalTotalText) {
+    comboFinalTotalText.textContent = grandTotal.toLocaleString() + '원';
+  }
+};
+
+// 인원(수량) 변경 시에도 실시간 합산 금액 반영
+document.addEventListener('DOMContentLoaded', function() {
+  const memberQty = document.getElementById('memberQuantity');
+  if (memberQty) {
+    memberQty.addEventListener('input', function() {
+      if (typeof updateAccBookingSummary === 'function') {
+        updateAccBookingSummary();
+      }
+    });
+    memberQty.addEventListener('change', function() {
+      if (typeof updateAccBookingSummary === 'function') {
+        updateAccBookingSummary();
+      }
+    });
+  }
 });
 </script>
 {% endblock %}
