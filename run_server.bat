@@ -15,3 +15,4 @@ timeout /t 1 /nobreak >nul
 start http://localhost:5000
 python app.py
 pause
+
