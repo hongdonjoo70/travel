@@ -56,6 +56,7 @@ erDiagram
         float member_discount_rate "회원 할인율 (예: 0.15 = 15%)"
         int recommendation_count "누적 추천 수 (Default 0)"
         varchar image_url "대표 이미지 경로/URL"
+        text image_urls "다중 고화질 사진 JSON URL 목록"
         datetime created_at "등록 일시"
     }
 
@@ -173,6 +174,7 @@ erDiagram
 | `member_discount_rate` | `FLOAT` | NOT NULL | `0.15` | 회원 특별 할인율 (0.10 ~ 0.20) |
 | `recommendation_count` | `INTEGER` | NOT NULL | `0` | 누적 추천(좋아요) 수 (랭킹 정렬 기준) |
 | `image_url` | `VARCHAR(255)` | NULLABLE | 기본 이미지 | 대표 썸네일 이미지 주소 |
+| `image_urls` | `TEXT` | NULLABLE | - | 관광지별 3~4개 이상 고화질 이미지 JSON 목록 |
 | `created_at` | `DATETIME` | NOT NULL | `CURRENT_TIMESTAMP` | 상품 등록 일시 |
 
 ---

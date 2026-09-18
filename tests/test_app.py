@@ -232,5 +232,49 @@ class TravelAppTestCase(unittest.TestCase):
         self.assertIsNotNone(rev)
         self.assertEqual(rev.rating, 5)
 
+    def test_multi_image_slider_and_retrieval(self):
+        """7. 관광지별 다중 이미지(3~4개) 저장, get_image_list() 헬퍼 및 캐러셀 슬라이드 렌더링 테스트"""
+        import json
+        
+        # 1) 다중 이미지 설정 (4장)
+        sample_images = [
+            'https://example.com/tour1.jpg',
+            'https://example.com/tour2.jpg',
+            'https://example.com/tour3.jpg',
+            'https://example.com/tour4.jpg'
+        ]
+        self.p1.set_image_list(sample_images)
+        db.session.commit()
+
+        # 2) 모델 레벨 검증: get_image_list()가 4개의 이미지를 정확히 반환하는지
+        img_list = self.p1.get_image_list()
+        self.assertEqual(len(img_list), 4)
+        self.assertEqual(img_list[0], 'https://example.com/tour1.jpg')
+        self.assertEqual(img_list[3], 'https://example.com/tour4.jpg')
+        self.assertEqual(self.p1.image_url, 'https://example.com/tour1.jpg')
+
+        # 3) Fallback 검증: 다중 이미지가 없는 p2의 경우 단일 이미지를 원소로 갖는 리스트 반환
+        p2_imgs = self.p2.get_image_list()
+        self.assertEqual(len(p2_imgs), 1)
+        self.assertEqual(p2_imgs[0], self.p2.image_url)
+
+        # 4) 상세 페이지에서 인터랙티브 캐러셀 슬라이드 마크업 노출 검증
+        res_detail = self.client.get(f'/products/{self.p1.id}')
+        self.assertEqual(res_detail.status_code, 200)
+        html = res_detail.get_data(as_text=True)
+        self.assertIn('id="tourCarousel"', html)
+        self.assertIn('carousel-track', html)
+        self.assertIn('carousel-thumbnails', html)
+        self.assertIn('currentSlideNum', html)
+        self.assertIn('https://example.com/tour1.jpg', html)
+        self.assertIn('https://example.com/tour4.jpg', html)
+
+        # 5) 목록 화면 및 메인 화면에서 다중 이미지 뱃지(badge-photos) 노출 검증
+        res_list = self.client.get('/products')
+        self.assertEqual(res_list.status_code, 200)
+        list_html = res_list.get_data(as_text=True)
+        self.assertIn('badge-photos', list_html)
+        self.assertIn('4장', list_html)
+
 if __name__ == '__main__':
     unittest.main()

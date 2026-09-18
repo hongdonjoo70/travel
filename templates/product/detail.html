@@ -14,12 +14,53 @@
   <div class="product-detail-layout">
     <!-- 좌측: 상품 이미지 및 추천 버튼 -->
     <div class="detail-gallery">
-      <div class="main-image-wrap">
-        <img src="{{ product.image_url }}" alt="{{ product.name }}" class="detail-main-img" onerror="this.src='/static/img/default-tour.jpg'">
-        <div class="image-tags">
-          <span class="tag-region">{{ product.region }}</span>
-          <span class="tag-theme">{{ product.theme.name }}</span>
+      {% set images = product.get_image_list() %}
+      <div class="product-carousel" id="tourCarousel" data-total="{{ images|length }}">
+        <!-- 메인 슬라이드 뷰포트 -->
+        <div class="carousel-viewport" id="carouselViewport">
+          <div class="carousel-track" id="carouselTrack">
+            {% for img in images %}
+              <div class="carousel-slide {% if loop.first %}active{% endif %}" data-index="{{ loop.index0 }}">
+                <img src="{{ img }}" alt="{{ product.name }} 사진 {{ loop.index }}" class="carousel-img" onerror="this.src='/static/img/default-tour.jpg'">
+              </div>
+            {% endfor %}
+          </div>
+
+          <!-- 지역 및 테마 태그 -->
+          <div class="image-tags">
+            <span class="tag-region">{{ product.region }}</span>
+            <span class="tag-theme">{{ product.theme.name }}</span>
+          </div>
+
+          {% if images|length > 1 %}
+            <!-- 슬라이드 카운터 배지 (예: 1 / 4) -->
+            <div class="carousel-counter">
+              <span id="currentSlideNum">1</span> / <span>{{ images|length }}</span>
+            </div>
+
+            <!-- 이전 / 다음 내비게이션 화살표 버튼 -->
+            <button type="button" class="carousel-btn prev-btn" id="carouselPrevBtn" aria-label="이전 사진">❮</button>
+            <button type="button" class="carousel-btn next-btn" id="carouselNextBtn" aria-label="다음 사진">❯</button>
+
+            <!-- 하단 닷 인디케이터 -->
+            <div class="carousel-indicators">
+              {% for img in images %}
+                <button type="button" class="indicator-dot {% if loop.first %}active{% endif %}" data-index="{{ loop.index0 }}" aria-label="사진 {{ loop.index }}번으로 이동"></button>
+              {% endfor %}
+            </div>
+          {% endif %}
         </div>
+
+        {% if images|length > 1 %}
+          <!-- 하단 썸네일 스트립 (미리보기) -->
+          <div class="carousel-thumbnails" id="carouselThumbnails">
+            {% for img in images %}
+              <button type="button" class="thumb-item {% if loop.first %}active{% endif %}" data-index="{{ loop.index0 }}" aria-label="사진 {{ loop.index }}번 선택">
+                <img src="{{ img }}" alt="{{ product.name }} 썸네일 {{ loop.index }}" onerror="this.src='/static/img/default-tour.jpg'">
+              </button>
+            {% endfor %}
+          </div>
+        {% endif %}
       </div>
 
       <!-- 추천(좋아요) 액션 박스 -->
@@ -206,4 +247,167 @@
   </section>
 </div>
 {% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const carousel = document.getElementById('tourCarousel');
+  if (!carousel) return;
+
+  const total = parseInt(carousel.dataset.total, 10) || 1;
+  if (total <= 1) return;
+
+  const track = document.getElementById('carouselTrack');
+  const slides = track ? track.querySelectorAll('.carousel-slide') : [];
+  const counter = document.getElementById('currentSlideNum');
+  const prevBtn = document.getElementById('carouselPrevBtn');
+  const nextBtn = document.getElementById('carouselNextBtn');
+  const dots = document.querySelectorAll('.indicator-dot');
+  const thumbs = document.querySelectorAll('.thumb-item');
+  const viewport = document.getElementById('carouselViewport');
+
+  let currentIndex = 0;
+  let autoSlideTimer = null;
+
+  function updateSlide(index) {
+    if (index < 0) {
+      currentIndex = total - 1;
+    } else if (index >= total) {
+      currentIndex = 0;
+    } else {
+      currentIndex = index;
+    }
+
+    // 트랙 슬라이드 이동
+    if (track) {
+      track.style.transform = `translateX(-${currentIndex * 100}%)`;
+    }
+
+    // 슬라이드 active 클래스 갱신
+    slides.forEach((slide, idx) => {
+      slide.classList.toggle('active', idx === currentIndex);
+    });
+
+    // 사진 번호 카운터 갱신
+    if (counter) {
+      counter.textContent = currentIndex + 1;
+    }
+
+    // 인디케이터 닷 갱신
+    dots.forEach((dot, idx) => {
+      dot.classList.toggle('active', idx === currentIndex);
+    });
+
+    // 썸네일 스트립 활성 상태 갱신 및 자동 스크롤
+    thumbs.forEach((thumb, idx) => {
+      thumb.classList.toggle('active', idx === currentIndex);
+      if (idx === currentIndex && thumb.scrollIntoView) {
+        thumb.scrollIntoView({ behavior: 'smooth', inline: 'nearest', block: 'nearest' });
+      }
+    });
+  }
+
+  // 이전/다음 화살표 버튼 이벤트
+  if (prevBtn) {
+    prevBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      updateSlide(currentIndex - 1);
+      resetAutoPlay();
+    });
+  }
+  if (nextBtn) {
+    nextBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      updateSlide(currentIndex + 1);
+      resetAutoPlay();
+    });
+  }
+
+  // 인디케이터 닷 클릭 이벤트
+  dots.forEach(dot => {
+    dot.addEventListener('click', function(e) {
+      e.preventDefault();
+      const idx = parseInt(this.dataset.index, 10);
+      updateSlide(idx);
+      resetAutoPlay();
+    });
+  });
+
+  // 썸네일 클릭 이벤트
+  thumbs.forEach(thumb => {
+    thumb.addEventListener('click', function(e) {
+      e.preventDefault();
+      const idx = parseInt(this.dataset.index, 10);
+      updateSlide(idx);
+      resetAutoPlay();
+    });
+  });
+
+  // 키보드 좌/우 방향키 내비게이션
+  window.addEventListener('keydown', function(e) {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+    if (e.key === 'ArrowLeft') {
+      updateSlide(currentIndex - 1);
+      resetAutoPlay();
+    } else if (e.key === 'ArrowRight') {
+      updateSlide(currentIndex + 1);
+      resetAutoPlay();
+    }
+  });
+
+  // 모바일 터치 스와이프 지원
+  if (viewport) {
+    let startX = 0;
+    let isTouching = false;
+
+    viewport.addEventListener('touchstart', function(e) {
+      startX = e.touches[0].clientX;
+      isTouching = true;
+    }, { passive: true });
+
+    viewport.addEventListener('touchend', function(e) {
+      if (!isTouching) return;
+      isTouching = false;
+      const endX = e.changedTouches[0].clientX;
+      const diffX = startX - endX;
+      if (Math.abs(diffX) > 40) {
+        if (diffX > 0) {
+          updateSlide(currentIndex + 1); // 좌로 스와이프: 다음 사진
+        } else {
+          updateSlide(currentIndex - 1); // 우로 스와이프: 이전 사진
+        }
+        resetAutoPlay();
+      }
+    }, { passive: true });
+
+    // 자동 슬라이드 (4.5초) 및 마우스 오버 시 일시 정지
+    viewport.addEventListener('mouseenter', stopAutoPlay);
+    viewport.addEventListener('mouseleave', startAutoPlay);
+  }
+
+  function startAutoPlay() {
+    stopAutoPlay();
+    autoSlideTimer = setInterval(function() {
+      updateSlide(currentIndex + 1);
+    }, 4500);
+  }
+
+  function stopAutoPlay() {
+    if (autoSlideTimer) {
+      clearInterval(autoSlideTimer);
+      autoSlideTimer = null;
+    }
+  }
+
+  function resetAutoPlay() {
+    stopAutoPlay();
+    startAutoPlay();
+  }
+
+  // 초기 자동 롤링 시작
+  startAutoPlay();
+});
+</script>
+{% endblock %}
+
 

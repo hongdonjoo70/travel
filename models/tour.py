@@ -40,6 +40,7 @@ class TourProduct(db.Model):
     member_discount_rate = db.Column(db.Float, default=0.15) # 회원 15% 기본 할인
     recommendation_count = db.Column(db.Integer, default=0, index=True) # 누적 추천수
     image_url = db.Column(db.String(255), default='/static/img/default-tour.jpg')
+    image_urls = db.Column(db.Text, nullable=True) # JSON 문자열 형태의 3~4개 이상 이미지 URL 목록
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
     # Relationships
@@ -72,6 +73,33 @@ class TourProduct(db.Model):
         if not user or not user.is_authenticated:
             return False
         return self.likes.filter_by(user_id=user.id).first() is not None
+
+    def get_image_list(self):
+        """관광 상품의 다중 이미지 URL 목록 반환 (없을 경우 기본 image_url 또는 기본 이미지 반환)"""
+        if self.image_urls:
+            try:
+                import json
+                urls = json.loads(self.image_urls)
+                if isinstance(urls, list) and len(urls) > 0:
+                    return urls
+            except Exception:
+                urls = [u.strip() for u in self.image_urls.splitlines() if u.strip()]
+                if urls:
+                    return urls
+        if self.image_url:
+            return [self.image_url]
+        return ['/static/img/default-tour.jpg']
+
+    def set_image_list(self, urls):
+        """이미지 URL 목록을 JSON으로 직렬화하여 저장하고 대표 이미지 동기화"""
+        import json
+        if isinstance(urls, list):
+            self.image_urls = json.dumps(urls, ensure_ascii=False)
+            if urls:
+                self.image_url = urls[0]
+        elif isinstance(urls, str):
+            self.image_urls = urls
+            self.image_url = urls
 
     def __repr__(self):
         return f"<TourProduct {self.name} ({self.region})>"

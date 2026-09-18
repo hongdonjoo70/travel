@@ -50,6 +50,12 @@ Python **Flask** 프레임워크를 기반으로 제작된 대한민국 6대 권
 - **비회원**: 등록된 별점(1~5점) 및 후기 **읽기(조회)만 가능**
 - **회원**: 로그인 시 상품에 대한 솔직 후기 **직접 작성 및 본인 후기 삭제 가능**
 
+### 7) 관광지별 다채로운 사진 슬라이드 (Carousel Slider)
+- **다중 고화질 사진 제공**: 모든 관광지(총 36개 코스)에 3~4개 이상의 테마별 고화질 사진을 적재하여 풍부한 시각 정보 제공 (`image_urls` JSON 필드)
+- **인터랙티브 슬라이더**: 상품 상세 페이지에서 좌우 화살표 내비게이션, 사진 번호 카운터(`1 / 4`), 하단 썸네일 스트립을 통해 원하는 사진으로 즉시 이동 가능
+- **터치 & 제스처 & 자동 롤링**: 모바일 터치 스와이프 제스처, 키보드 좌우 방향키 탐색, 자동 롤링(마우스 호버 시 일시 정지) 지원
+- **탐색 목록 뱃지 표출**: 메인 및 여행 상품 탐색 화면 카드에서 등록된 사진 개수(`📷 4장`) 배지 표출
+
 ---
 
 ## 2. 기술 스택
@@ -258,11 +264,13 @@ classDiagram
         +float member_discount_rate "회원 할인율 (예: 0.15)"
         +int recommendation_count "누적 추천 수"
         +string image_url
+        +string image_urls "JSON 다중 이미지 목록"
         +datetime created_at
         +get_discounted_price(is_member: bool) int
         +get_discount_amount(is_member: bool) int
         +get_average_rating() float
         +is_liked_by(user: User) bool
+        +get_image_list() list
     }
 
     class ProductLike {
@@ -408,6 +416,7 @@ erDiagram
         float member_discount_rate "회원 할인율"
         int recommendation_count "누적 추천수"
         varchar image_url "대표 이미지"
+        text image_urls "다중 이미지 JSON 목록"
         datetime created_at "등록일시"
     }
 

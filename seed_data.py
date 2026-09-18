@@ -1,3 +1,4 @@
+import json
 import random
 from datetime import datetime, timezone, timedelta
 from extensions import db
@@ -7,7 +8,7 @@ from models.cart import Cart
 from models.review import Review
 
 def seed_database():
-    """초기 데이터 시딩 (테마, 사용자, 6개 권역 총 36개 풍부한 관광 상품, 다채로운 이용 후기)"""
+    """초기 데이터 시딩 (테마, 사용자, 6개 권역 총 36개 풍부한 관광 상품[각 4장 고화질 이미지], 다채로운 이용 후기)"""
     # 1. 테마 등록 (휴양지, 체험, 문화/역사 등)
     themes_data = [
         {'code': 'RESORT', 'name': '휴양지', 'description': '지친 일상을 벗어나 자연 속에서 편안히 쉬어가는 힐링 여행'},
@@ -53,7 +54,7 @@ def seed_database():
             db.session.add(cart)
         created_users.append(user)
 
-    # 3. 6대 권역별 총 36개 추천 관광 상품 정의 (권역당 6개씩)
+    # 3. 6대 권역별 총 36개 추천 관광 상품 정의 (권역당 6개씩, 관광지별 4개 고화질 이미지 슬라이드)
     products_data = [
         # --- [1] 서울/경기 (6개) ---
         {
@@ -64,7 +65,12 @@ def seed_database():
             'original_price': 65000,
             'member_discount_rate': 0.15,
             'recommendation_count': 890,
-            'image_url': 'https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=600&q=80'
+            'image_urls': [
+                'https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1513836279014-a89f7a76ae86?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=800&q=80'
+            ]
         },
         {
             'name': '수원 화성 성곽길 달빛 투어 & 플라잉 수원 열기구 체험',
@@ -74,7 +80,12 @@ def seed_database():
             'original_price': 45000,
             'member_discount_rate': 0.10,
             'recommendation_count': 520,
-            'image_url': 'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?auto=format&fit=crop&w=600&q=80'
+            'image_urls': [
+                'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1538485399081-7191377e8241?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1508873696983-2df5293cb32b?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1519501025264-65ba15a82390?auto=format&fit=crop&w=800&q=80'
+            ]
         },
         {
             'name': '포천 아트밸리 모노레일 & 허브아일랜드 불빛동화 힐링',
@@ -84,7 +95,12 @@ def seed_database():
             'original_price': 58000,
             'member_discount_rate': 0.15,
             'recommendation_count': 710,
-            'image_url': 'https://images.unsplash.com/photo-1518495973542-4542c06a5843?auto=format&fit=crop&w=600&q=80'
+            'image_urls': [
+                'https://images.unsplash.com/photo-1518495973542-4542c06a5843?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=800&q=80'
+            ]
         },
         {
             'name': '파주 헤이리 예술마을 도자기 공예 & 출판도시 북스테이',
@@ -94,7 +110,12 @@ def seed_database():
             'original_price': 42000,
             'member_discount_rate': 0.10,
             'recommendation_count': 460,
-            'image_url': 'https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format&fit=crop&w=600&q=80'
+            'image_urls': [
+                'https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?auto=format&fit=crop&w=800&q=80'
+            ]
         },
         {
             'name': '양평 두물머리 물안개 산책길 & 세미원 연꽃 힐링 정원',
@@ -104,7 +125,12 @@ def seed_database():
             'original_price': 35000,
             'member_discount_rate': 0.10,
             'recommendation_count': 630,
-            'image_url': 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80'
+            'image_urls': [
+                'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1518495973542-4542c06a5843?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=800&q=80'
+            ]
         },
         {
             'name': '용인 한국민속촌 전통 옹기 만들기 & 야간 조선 한복 축제',
@@ -114,7 +140,12 @@ def seed_database():
             'original_price': 52000,
             'member_discount_rate': 0.15,
             'recommendation_count': 810,
-            'image_url': 'https://images.unsplash.com/photo-1538485399081-7191377e8241?auto=format&fit=crop&w=600&q=80'
+            'image_urls': [
+                'https://images.unsplash.com/photo-1538485399081-7191377e8241?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1519501025264-65ba15a82390?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1513836279014-a89f7a76ae86?auto=format&fit=crop&w=800&q=80'
+            ]
         },
 
         # --- [2] 강원 (6개) ---
@@ -126,7 +157,12 @@ def seed_database():
             'original_price': 85000,
             'member_discount_rate': 0.15,
             'recommendation_count': 1180,
-            'image_url': 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=600&q=80'
+            'image_urls': [
+                'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1544644181-1484b3fdfc62?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=800&q=80'
+            ]
         },
         {
             'name': '강릉 안목해변 커피거리 & 정동진 바다열차 낭만 투어',
@@ -136,7 +172,12 @@ def seed_database():
             'original_price': 70000,
             'member_discount_rate': 0.10,
             'recommendation_count': 940,
-            'image_url': 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80'
+            'image_urls': [
+                'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1508873696983-2df5293cb32b?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1519501025264-65ba15a82390?auto=format&fit=crop&w=800&q=80'
+            ]
         },
         {
             'name': '춘천 남이섬 스카이라인 짚와이어 & 의암호 카누 물레길',
@@ -146,7 +187,12 @@ def seed_database():
             'original_price': 65000,
             'member_discount_rate': 0.15,
             'recommendation_count': 780,
-            'image_url': 'https://images.unsplash.com/photo-1544644181-1484b3fdfc62?auto=format&fit=crop&w=600&q=80'
+            'image_urls': [
+                'https://images.unsplash.com/photo-1544644181-1484b3fdfc62?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=800&q=80'
+            ]
         },
         {
             'name': '속초 영랑호 벚꽃 둘레길 & 설악산 권금성 케이블카',
@@ -156,7 +202,12 @@ def seed_database():
             'original_price': 78000,
             'member_discount_rate': 0.15,
             'recommendation_count': 1050,
-            'image_url': 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=600&q=80'
+            'image_urls': [
+                'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1518495973542-4542c06a5843?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1513836279014-a89f7a76ae86?auto=format&fit=crop&w=800&q=80'
+            ]
         },
         {
             'name': '정선 아리랑 열차 & 구절리 풍경 레일바이크 어드벤처',
@@ -166,7 +217,12 @@ def seed_database():
             'original_price': 55000,
             'member_discount_rate': 0.10,
             'recommendation_count': 620,
-            'image_url': 'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?auto=format&fit=crop&w=600&q=80'
+            'image_urls': [
+                'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1544644181-1484b3fdfc62?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80'
+            ]
         },
         {
             'name': '인제 원대리 자작나무숲 힐링 트레킹 & 오색 탄산온천',
@@ -176,7 +232,12 @@ def seed_database():
             'original_price': 68000,
             'member_discount_rate': 0.15,
             'recommendation_count': 830,
-            'image_url': 'https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=600&q=80'
+            'image_urls': [
+                'https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1513836279014-a89f7a76ae86?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1544644181-1484b3fdfc62?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=800&q=80'
+            ]
         },
 
         # --- [3] 충청 (6개) ---
@@ -188,7 +249,12 @@ def seed_database():
             'original_price': 110000,
             'member_discount_rate': 0.15,
             'recommendation_count': 1250,
-            'image_url': 'https://images.unsplash.com/photo-1508873696983-2df5293cb32b?auto=format&fit=crop&w=600&q=80'
+            'image_urls': [
+                'https://images.unsplash.com/photo-1508873696983-2df5293cb32b?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1544644181-1484b3fdfc62?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=800&q=80'
+            ]
         },
         {
             'name': '태안 안면도 꽃지해수욕장 일몰 & 머드 갯벌 바지락 체험',
@@ -198,7 +264,12 @@ def seed_database():
             'original_price': 48000,
             'member_discount_rate': 0.10,
             'recommendation_count': 690,
-            'image_url': 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80'
+            'image_urls': [
+                'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1518495973542-4542c06a5843?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1519501025264-65ba15a82390?auto=format&fit=crop&w=800&q=80'
+            ]
         },
         {
             'name': '제천 청풍호반 케이블카 & 비봉산 하늘전망대 파노라마',
@@ -208,7 +279,12 @@ def seed_database():
             'original_price': 62000,
             'member_discount_rate': 0.15,
             'recommendation_count': 740,
-            'image_url': 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=600&q=80'
+            'image_urls': [
+                'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1508873696983-2df5293cb32b?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1518495973542-4542c06a5843?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=800&q=80'
+            ]
         },
         {
             'name': '보령 대천해수욕장 해상 짚트랙 & 보령해저터널 드라이브',
@@ -218,7 +294,12 @@ def seed_database():
             'original_price': 58000,
             'member_discount_rate': 0.10,
             'recommendation_count': 590,
-            'image_url': 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=600&q=80'
+            'image_urls': [
+                'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1544644181-1484b3fdfc62?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80'
+            ]
         },
         {
             'name': '부여 백제역사유적지구 & 궁남지 포룡정 밤도깨비 산책',
@@ -228,7 +309,12 @@ def seed_database():
             'original_price': 42000,
             'member_discount_rate': 0.10,
             'recommendation_count': 450,
-            'image_url': 'https://images.unsplash.com/photo-1538485399081-7191377e8241?auto=format&fit=crop&w=600&q=80'
+            'image_urls': [
+                'https://images.unsplash.com/photo-1538485399081-7191377e8241?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1518495973542-4542c06a5843?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1519501025264-65ba15a82390?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format&fit=crop&w=800&q=80'
+            ]
         },
         {
             'name': '아산 지중해마을 골목 산책 & 파라다이스 스파 도고 힐링',
@@ -238,7 +324,12 @@ def seed_database():
             'original_price': 75000,
             'member_discount_rate': 0.15,
             'recommendation_count': 820,
-            'image_url': 'https://images.unsplash.com/photo-1544644181-1484b3fdfc62?auto=format&fit=crop&w=600&q=80'
+            'image_urls': [
+                'https://images.unsplash.com/photo-1544644181-1484b3fdfc62?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=800&q=80'
+            ]
         },
 
         # --- [4] 전라 (6개) ---
@@ -250,7 +341,12 @@ def seed_database():
             'original_price': 80000,
             'member_discount_rate': 0.15,
             'recommendation_count': 1340,
-            'image_url': 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=600&q=80'
+            'image_urls': [
+                'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1519501025264-65ba15a82390?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=800&q=80'
+            ]
         },
         {
             'name': '순천만 갈대군락지 생태 탐방 & 국가정원 스카이큐브',
@@ -260,7 +356,12 @@ def seed_database():
             'original_price': 45000,
             'member_discount_rate': 0.10,
             'recommendation_count': 1120,
-            'image_url': 'https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=600&q=80'
+            'image_urls': [
+                'https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1518495973542-4542c06a5843?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1508873696983-2df5293cb32b?auto=format&fit=crop&w=800&q=80'
+            ]
         },
         {
             'name': '전주 한옥마을 다도 체험 & 명품 전통 한복 대여 패키지',
@@ -270,7 +371,12 @@ def seed_database():
             'original_price': 50000,
             'member_discount_rate': 0.15,
             'recommendation_count': 980,
-            'image_url': 'https://images.unsplash.com/photo-1538485399081-7191377e8241?auto=format&fit=crop&w=600&q=80'
+            'image_urls': [
+                'https://images.unsplash.com/photo-1538485399081-7191377e8241?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1513836279014-a89f7a76ae86?auto=format&fit=crop&w=800&q=80'
+            ]
         },
         {
             'name': '담양 죽녹원 대나무숲 산책 & 메타세쿼이아 힐링 로드',
@@ -280,7 +386,12 @@ def seed_database():
             'original_price': 38000,
             'member_discount_rate': 0.10,
             'recommendation_count': 760,
-            'image_url': 'https://images.unsplash.com/photo-1518495973542-4542c06a5843?auto=format&fit=crop&w=600&q=80'
+            'image_urls': [
+                'https://images.unsplash.com/photo-1518495973542-4542c06a5843?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1513836279014-a89f7a76ae86?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=800&q=80'
+            ]
         },
         {
             'name': '보성 대한다원 햇녹차 찻잎 따기 & 편백 치유의 숲',
@@ -290,7 +401,12 @@ def seed_database():
             'original_price': 52000,
             'member_discount_rate': 0.15,
             'recommendation_count': 680,
-            'image_url': 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=600&q=80'
+            'image_urls': [
+                'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1513836279014-a89f7a76ae86?auto=format&fit=crop&w=800&q=80'
+            ]
         },
         {
             'name': '신안 퍼플섬 보랏빛 다리 투어 & 태평염전 천일염 만들기',
@@ -300,7 +416,12 @@ def seed_database():
             'original_price': 64000,
             'member_discount_rate': 0.15,
             'recommendation_count': 590,
-            'image_url': 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80'
+            'image_urls': [
+                'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1519501025264-65ba15a82390?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1544644181-1484b3fdfc62?auto=format&fit=crop&w=800&q=80'
+            ]
         },
 
         # --- [5] 경북 (6개) ---
@@ -312,7 +433,12 @@ def seed_database():
             'original_price': 180000,
             'member_discount_rate': 0.20,
             'recommendation_count': 1520,
-            'image_url': 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=600&q=80'
+            'image_urls': [
+                'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1508873696983-2df5293cb32b?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1518495973542-4542c06a5843?auto=format&fit=crop&w=800&q=80'
+            ]
         },
         {
             'name': '경주 불국사 & 황리단길 야경 감성 힐링 산책',
@@ -322,7 +448,12 @@ def seed_database():
             'original_price': 75000,
             'member_discount_rate': 0.15,
             'recommendation_count': 1190,
-            'image_url': 'https://images.unsplash.com/photo-1544644181-1484b3fdfc62?auto=format&fit=crop&w=600&q=80'
+            'image_urls': [
+                'https://images.unsplash.com/photo-1544644181-1484b3fdfc62?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1538485399081-7191377e8241?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1519501025264-65ba15a82390?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format&fit=crop&w=800&q=80'
+            ]
         },
         {
             'name': '포항 호미곶 상생의 손 일출 & 환호공원 스페이스워크',
@@ -332,7 +463,12 @@ def seed_database():
             'original_price': 55000,
             'member_discount_rate': 0.10,
             'recommendation_count': 960,
-            'image_url': 'https://images.unsplash.com/photo-1508873696983-2df5293cb32b?auto=format&fit=crop&w=600&q=80'
+            'image_urls': [
+                'https://images.unsplash.com/photo-1508873696983-2df5293cb32b?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1519501025264-65ba15a82390?auto=format&fit=crop&w=800&q=80'
+            ]
         },
         {
             'name': '안동 하회마을 전통 탈춤 관람 & 유교문화 한옥 고택 스테이',
@@ -342,7 +478,12 @@ def seed_database():
             'original_price': 85000,
             'member_discount_rate': 0.15,
             'recommendation_count': 870,
-            'image_url': 'https://images.unsplash.com/photo-1538485399081-7191377e8241?auto=format&fit=crop&w=600&q=80'
+            'image_urls': [
+                'https://images.unsplash.com/photo-1538485399081-7191377e8241?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1513836279014-a89f7a76ae86?auto=format&fit=crop&w=800&q=80'
+            ]
         },
         {
             'name': '청송 주산지 왕버들 물안개 숲 & 솔기온천 스파 웰니스',
@@ -352,7 +493,12 @@ def seed_database():
             'original_price': 72000,
             'member_discount_rate': 0.15,
             'recommendation_count': 640,
-            'image_url': 'https://images.unsplash.com/photo-1518495973542-4542c06a5843?auto=format&fit=crop&w=600&q=80'
+            'image_urls': [
+                'https://images.unsplash.com/photo-1518495973542-4542c06a5843?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1544644181-1484b3fdfc62?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=800&q=80'
+            ]
         },
         {
             'name': '문경새재 황톳길 맨발 트레킹 & 오미자 와인동굴 투어',
@@ -362,7 +508,12 @@ def seed_database():
             'original_price': 49000,
             'member_discount_rate': 0.10,
             'recommendation_count': 580,
-            'image_url': 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=600&q=80'
+            'image_urls': [
+                'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1513836279014-a89f7a76ae86?auto=format&fit=crop&w=800&q=80'
+            ]
         },
 
         # --- [6] 제주 (6개) ---
@@ -374,7 +525,12 @@ def seed_database():
             'original_price': 120000,
             'member_discount_rate': 0.20,
             'recommendation_count': 1680,
-            'image_url': 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80'
+            'image_urls': [
+                'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1513836279014-a89f7a76ae86?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1518495973542-4542c06a5843?auto=format&fit=crop&w=800&q=80'
+            ]
         },
         {
             'name': '제주 우도 전기차 일주 & 해녀와 함께하는 해산물 물질',
@@ -384,7 +540,12 @@ def seed_database():
             'original_price': 95000,
             'member_discount_rate': 0.15,
             'recommendation_count': 1450,
-            'image_url': 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=600&q=80'
+            'image_urls': [
+                'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1544644181-1484b3fdfc62?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1508873696983-2df5293cb32b?auto=format&fit=crop&w=800&q=80'
+            ]
         },
         {
             'name': '협재 해수욕장 선셋 요트 투어 & 차귀도 야생 돌고래 탐선',
@@ -394,7 +555,12 @@ def seed_database():
             'original_price': 110000,
             'member_discount_rate': 0.20,
             'recommendation_count': 1390,
-            'image_url': 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80'
+            'image_urls': [
+                'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1518495973542-4542c06a5843?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1519501025264-65ba15a82390?auto=format&fit=crop&w=800&q=80'
+            ]
         },
         {
             'name': '한라산 영실 탐방로 절경 트레킹 & 흑돼지 미식 바비큐',
@@ -404,7 +570,12 @@ def seed_database():
             'original_price': 88000,
             'member_discount_rate': 0.15,
             'recommendation_count': 1220,
-            'image_url': 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=600&q=80'
+            'image_urls': [
+                'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=800&q=80'
+            ]
         },
         {
             'name': '서귀포 쇠소깍 전통 나룻배 카약 & 외돌개 해안 올레길',
@@ -414,7 +585,12 @@ def seed_database():
             'original_price': 65000,
             'member_discount_rate': 0.15,
             'recommendation_count': 1080,
-            'image_url': 'https://images.unsplash.com/photo-1544644181-1484b3fdfc62?auto=format&fit=crop&w=600&q=80'
+            'image_urls': [
+                'https://images.unsplash.com/photo-1544644181-1484b3fdfc62?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1518495973542-4542c06a5843?auto=format&fit=crop&w=800&q=80'
+            ]
         },
         {
             'name': '조천 곶자왈 에코랜드 숲속 기차 & 피톤치드 족욕 스파',
@@ -424,7 +600,12 @@ def seed_database():
             'original_price': 58000,
             'member_discount_rate': 0.10,
             'recommendation_count': 890,
-            'image_url': 'https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=600&q=80'
+            'image_urls': [
+                'https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1513836279014-a89f7a76ae86?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1544644181-1484b3fdfc62?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=800&q=80'
+            ]
         }
     ]
 
@@ -436,11 +617,12 @@ def seed_database():
         ("잊지 못할 추억이 생겼습니다.", "답답한 도시를 벗어나 맑은 공기 마시며 즐겁게 힐링했습니다. 후기 믿고 갔는데 대만족이에요.")
     ]
 
-    # 기존 상품 명칭 세트
-    existing_product_names = {p.name for p in TourProduct.query.all()}
-
     for p_info in products_data:
-        if p_info['name'] not in existing_product_names:
+        json_urls = json.dumps(p_info['image_urls'], ensure_ascii=False)
+        first_img = p_info['image_urls'][0]
+
+        product = TourProduct.query.filter_by(name=p_info['name']).first()
+        if not product:
             product = TourProduct(
                 name=p_info['name'],
                 description=p_info['description'],
@@ -449,7 +631,8 @@ def seed_database():
                 original_price=p_info['original_price'],
                 member_discount_rate=p_info['member_discount_rate'],
                 recommendation_count=p_info['recommendation_count'],
-                image_url=p_info['image_url']
+                image_url=first_img,
+                image_urls=json_urls
             )
             db.session.add(product)
             db.session.flush()
@@ -468,10 +651,14 @@ def seed_database():
                     rating=rating
                 )
                 db.session.add(review)
+        else:
+            # 기존 상품의 image_urls 및 image_url 갱신
+            product.image_urls = json_urls
+            product.image_url = first_img
 
     db.session.commit()
     total_count = TourProduct.query.count()
-    print(f"[Seed] 성공! 총 {total_count}개의 관광지 여행 상품과 다채로운 후기 데이터가 적재되었습니다.")
+    print(f"[Seed] 성공! 총 {total_count}개의 관광지 여행 상품에 다중 고화질 이미지(각 4장) 및 후기 데이터가 적재/갱신되었습니다.")
 
 if __name__ == '__main__':
     from app import create_app

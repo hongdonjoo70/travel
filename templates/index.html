@@ -83,6 +83,9 @@
               <img src="{{ p.image_url }}" alt="{{ p.name }}" class="card-thumb" onerror="this.src='/static/img/default-tour.jpg'">
               <span class="badge-region">{{ p.region }}</span>
               <span class="badge-theme">{{ p.theme.name }}</span>
+              {% if p.get_image_list()|length > 1 %}
+                <span class="badge-photos">📷 {{ p.get_image_list()|length }}장</span>
+              {% endif %}
             </div>
             <div class="card-body">
               <div class="card-meta">

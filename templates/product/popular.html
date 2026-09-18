@@ -60,6 +60,9 @@
             <div class="thumb-chips">
               <span class="badge-region">{{ p.region }}</span>
               <span class="badge-theme">{{ p.theme.name }}</span>
+              {% if p.get_image_list()|length > 1 %}
+                <span class="badge-photos">📷 {{ p.get_image_list()|length }}장</span>
+              {% endif %}
             </div>
           </div>
 
