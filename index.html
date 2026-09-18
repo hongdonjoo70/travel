@@ -1,231 +1,429 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>대한민국 지역별 여행 지도</title>
-  <link rel="stylesheet" href="style.css" />
-  <!-- Pretendard 폰트 CDN 적용 -->
-  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>대한민국 관광지 안내 & 여행 투어 (길마중)</title>
+  
+  <!-- Pretendard CDN -->
+  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
+  
+  <!-- CSS Stylesheet -->
+  <link rel="stylesheet" href="static/css/style.css">
+
+  <style>
+    /* 자동 서버 감지 배너 */
+    .server-status-bar {
+      background: #0f172a;
+      color: #94a3b8;
+      padding: 0.65rem 1.25rem;
+      font-size: 0.84rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+    .status-left {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+    .pulse-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #eab308;
+      box-shadow: 0 0 0 0 rgba(234, 179, 8, 0.7);
+      animation: pulseAnim 1.8s infinite;
+    }
+    .pulse-dot.online {
+      background: #22c55e;
+      box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
+    }
+    @keyframes pulseAnim {
+      0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(234, 179, 8, 0.7); }
+      70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(234, 179, 8, 0); }
+      100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(234, 179, 8, 0); }
+    }
+    .status-badge {
+      font-weight: 700;
+      color: #fff;
+    }
+    .status-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .btn-server-link {
+      background: #2563eb;
+      color: #fff;
+      padding: 4px 10px;
+      border-radius: 6px;
+      text-decoration: none;
+      font-size: 0.78rem;
+      font-weight: 600;
+      transition: background 0.2s;
+    }
+    .btn-server-link:hover {
+      background: #1d4ed8;
+    }
+    .btn-server-bat {
+      background: rgba(255, 255, 255, 0.15);
+      color: #cbd5e1;
+      padding: 4px 10px;
+      border-radius: 6px;
+      text-decoration: none;
+      font-size: 0.78rem;
+      font-weight: 600;
+    }
+    .btn-server-bat:hover {
+      background: rgba(255, 255, 255, 0.25);
+      color: #fff;
+    }
+  </style>
 </head>
 <body>
-  <div class="app-wrapper">
-    <header class="app-header">
-      <span class="badge">Travel Map</span>
-      <h1>대한민국 지역별 여행 지도</h1>
-      <p class="subtitle">원하는 지역을 선택하면 지도에서 해당 지역이 하이라이트됩니다.</p>
-    </header>
-
-    <main class="main-content">
-      <!-- 지역 선택 버튼 탭 그룹 -->
-      <nav class="region-nav" aria-label="지역 선택">
-        <button type="button" class="btn-region active" data-region="all">전국</button>
-        <button type="button" class="btn-region" data-region="seoul">서울/수도권</button>
-        <button type="button" class="btn-region" data-region="gangwon">강원</button>
-        <button type="button" class="btn-region" data-region="chungcheong">충청</button>
-        <button type="button" class="btn-region" data-region="jeolla">전라</button>
-        <button type="button" class="btn-region" data-region="gyeongsang">경상</button>
-        <button type="button" class="btn-region" data-region="jeju">제주</button>
-      </nav>
-
-      <!-- 지도 및 상세 정보 카드 컨테이너 -->
-      <section class="map-card">
-        <div class="map-card-body">
-          
-          <!-- 지도 뷰어 (370 x 539 규격 레이어 중첩 방식) -->
-          <div class="map-stage">
-            <div class="map-container" id="mapContainer">
-              <!-- 기본 배경: 전국 지도 베이스 -->
-              <img
-                src="img/map-backdrop.png"
-                alt="전국 기본 지도"
-                class="map-layer map-backdrop"
-              />
-
-              <!-- 지역별 하이라이트 오버레이 레이어 (투명 PNG 중첩) -->
-              <img
-                src="img/map-seoul-area.png"
-                alt="서울/수도권"
-                class="map-layer map-region-layer"
-                data-region="seoul"
-              />
-              <img
-                src="img/map-gangwon.png"
-                alt="강원도"
-                class="map-layer map-region-layer"
-                data-region="gangwon"
-              />
-              <img
-                src="img/map-chungcheong.png"
-                alt="충청도"
-                class="map-layer map-region-layer"
-                data-region="chungcheong"
-              />
-              <img
-                src="img/map-jeolla.png"
-                alt="전라도"
-                class="map-layer map-region-layer"
-                data-region="jeolla"
-              />
-              <img
-                src="img/map-gyeongsang.png"
-                alt="경상도"
-                class="map-layer map-region-layer"
-                data-region="gyeongsang"
-              />
-              <img
-                src="img/map-jeju.png"
-                alt="제주도"
-                class="map-layer map-region-layer"
-                data-region="jeju"
-              />
-            </div>
-          </div>
-
-          <!-- 선택된 지역 정보 패널 -->
-          <div class="info-panel">
-            <div class="panel-header">
-              <span class="status-indicator"></span>
-              <h2 id="regionTitle">전국</h2>
-            </div>
-            <p id="regionDescription" class="region-desc">
-              전체 지역이 표시되어 있습니다. 둘러보고 싶은 권역을 상단에서 선택해보세요.
-            </p>
-
-            <div class="panel-meta">
-              <div class="meta-item">
-                <span class="meta-label">표시 이미지</span>
-                <code id="fileBadge" class="file-code">map-backdrop.png</code>
-              </div>
-              <div class="meta-item">
-                <span class="meta-label">권역 분류</span>
-                <span id="regionCategory" class="meta-val">전국 전체</span>
-              </div>
-            </div>
-
-            <!-- 모바일/화면 전환 지원용 셀렉트 드롭다운 -->
-            <div class="select-wrapper">
-              <label for="regionSelect">드롭다운으로 빠른 선택:</label>
-              <select id="regionSelect" class="region-select">
-                <option value="all">전국 (map-backdrop.png)</option>
-                <option value="seoul">서울/수도권 (map-seoul-area.png)</option>
-                <option value="gangwon">강원 (map-gangwon.png)</option>
-                <option value="chungcheong">충청 (map-chungcheong.png)</option>
-                <option value="jeolla">전라 (map-jeolla.png)</option>
-                <option value="gyeongsang">경상 (map-gyeongsang.png)</option>
-                <option value="jeju">제주 (map-jeju.png)</option>
-              </select>
-            </div>
-          </div>
-
-        </div>
-      </section>
-    </main>
+  <!-- 상단 자동 감지 & 연결 알림 바 -->
+  <div class="server-status-bar" id="serverStatusBar">
+    <div class="status-left">
+      <span class="pulse-dot" id="pulseDot"></span>
+      <span id="serverStatusText">
+        <strong class="status-badge" id="statusBadgeText">서버 연결 확인 중...</strong>
+        (Flask 웹 서버가 실행되면 전체 예약·결제·회원 기능으로 자동 전환됩니다)
+      </span>
+    </div>
+    <div class="status-actions">
+      <a href="http://localhost:5000" id="directConnectBtn" class="btn-server-link" target="_self">Flask 서버 바로 접속</a>
+      <a href="run_server.bat" class="btn-server-bat" title="서버 자동 실행 배치 파일">▶ 서버 실행기(run_server.bat)</a>
+    </div>
   </div>
 
+  <!-- Header / Navigation -->
+  <header class="navbar">
+    <div class="nav-container">
+      <a href="index.html" class="brand-logo">
+        <span class="logo-icon">🗺️</span>
+        <span class="logo-text">대한민국 <strong>여행 투어</strong></span>
+      </a>
+
+      <nav class="nav-links">
+        <a href="index.html" class="nav-link active">홈 (지도 추천)</a>
+        <a href="http://localhost:5000/products" class="nav-link">여행 상품</a>
+        <a href="http://localhost:5000/products/popular" class="nav-link nav-highlight">
+          <span class="badge-hot">HOT</span> 추천 랭킹
+        </a>
+      </nav>
+
+      <div class="nav-auth">
+        <a href="http://localhost:5000/auth/login" class="btn-text">로그인</a>
+        <a href="http://localhost:5000/auth/signup" class="btn-primary">회원가입</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main-wrapper">
+    <div class="container page-content">
+      <!-- 메인 헤더 & 배너 -->
+      <section class="hero-section">
+        <div class="hero-content">
+          <span class="hero-badge">✨ 대한민국 방방곡곡</span>
+          <h1>전통과 힐링이 머무는 <strong>아름다운 여정</strong></h1>
+          <p>서울·경기부터 제주까지, 6대 권역별 맞춤형 테마 여행 코스를 지도에서 확인하고 특별한 회원 할인 혜택으로 예약해보세요.</p>
+        </div>
+      </section>
+
+      <!-- 지역별 지도 & 상품 스플릿 레이아웃 -->
+      <div class="layout-split">
+        <!-- 1) 인터랙티브 지도 패널 -->
+        <div class="map-panel">
+          <div class="map-header">
+            <h3>📍 6대 권역 인터랙티브 지도</h3>
+            <span class="map-tip">지도의 지역을 클릭하거나 아래 버튼을 눌러보세요</span>
+          </div>
+
+          <div class="map-stage-box">
+            <div class="map-wrapper" id="mapWrapper">
+              <!-- 기본 전국 지도 베이스 -->
+              <img src="static/img/map-backdrop.png" alt="전국 기본 지도" class="map-base">
+              
+              <!-- 6개 권역별 하이라이트 오버레이 레이어 -->
+              <img src="static/img/map-seoul-area.png" id="layer-seoul" class="map-overlay" alt="서울/경기">
+              <img src="static/img/map-gangwon.png" id="layer-gangwon" class="map-overlay" alt="강원">
+              <img src="static/img/map-chungcheong.png" id="layer-chungcheong" class="map-overlay" alt="충청">
+              <img src="static/img/map-jeolla.png" id="layer-jeolla" class="map-overlay" alt="전라">
+              <img src="static/img/map-gyeongsang.png" id="layer-gyeongsang" class="map-overlay" alt="경북">
+              <img src="static/img/map-jeju.png" id="layer-jeju" class="map-overlay" alt="제주">
+            </div>
+
+            <!-- 지도 하단 퀵 선택 버튼 그룹 -->
+            <div class="map-quick-buttons">
+              <button type="button" class="btn-map-pill active" onclick="selectRegion('전체')">전국 전체</button>
+              <button type="button" class="btn-map-pill" onclick="selectRegion('서울/경기')">서울/경기</button>
+              <button type="button" class="btn-map-pill" onclick="selectRegion('강원')">강원</button>
+              <button type="button" class="btn-map-pill" onclick="selectRegion('충청')">충청</button>
+              <button type="button" class="btn-map-pill" onclick="selectRegion('전라')">전라</button>
+              <button type="button" class="btn-map-pill" onclick="selectRegion('경북')">경북</button>
+              <button type="button" class="btn-map-pill" onclick="selectRegion('제주')">제주</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2) 권역별 추천 상품 리스트 패널 -->
+        <div class="product-panel">
+          <!-- 필터 툴바 -->
+          <div class="panel-toolbar">
+            <div class="filter-group">
+              <span class="filter-label">테마 필터:</span>
+              <button type="button" class="btn-theme-filter active" onclick="filterTheme('ALL')">전체 테마</button>
+              <button type="button" class="btn-theme-filter" onclick="filterTheme('RESORT')">🌿 휴양지</button>
+              <button type="button" class="btn-theme-filter" onclick="filterTheme('EXPERIENCE')">🏄 체험</button>
+              <button type="button" class="btn-theme-filter" onclick="filterTheme('CULTURE')">🏛️ 문화/역사</button>
+            </div>
+            <div class="result-count">
+              총 <strong id="productCount">36</strong>개 여행 코스
+            </div>
+          </div>
+
+          <!-- 상품 카드 그리드 (동적 렌더링) -->
+          <div class="product-grid" id="productGrid">
+            <!-- 자바스크립트로 36개 고품질 관광 상품 렌더링 -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-info">
+        <h3>대한민국 관광지 안내 포털 (길마중)</h3>
+        <p>서울/경기 · 전라 · 충청 · 강원 · 경북 · 제주 6대 권역별 맞춤 여행 및 힐링/체험 테마 투어</p>
+        <p class="copyright">© 2026 Korea Tourism Guide. All rights reserved.</p>
+      </div>
+      <div class="footer-benefit">
+        <div class="benefit-box">
+          <span class="benefit-icon">🎁</span>
+          <div class="benefit-text">
+            <strong>회원 가입 특별 혜택</strong>
+            <span>모든 추천 여행 상품 10~20% 즉시 할인 및 추천 숙박 연계 예약</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- 36개 관광 상품 데이터 및 자동 서버 연결 스크립트 -->
   <script>
-    // 지역별 메타데이터 매핑
-    const REGION_DATA = {
-      all: {
-        title: "전국",
-        category: "전국 전체",
-        file: "map-backdrop.png",
-        desc: "전체 대한민국 지도가 표시 중입니다. 특정 지역을 선택하여 세부 권역을 확인하세요."
-      },
-      seoul: {
-        title: "서울 / 수도권",
-        category: "서울특별시, 경기도, 인천광역시",
-        file: "map-seoul-area.png",
-        desc: "대한민국의 수도 서울과 경기, 인천을 포함하는 수도권 지역입니다."
-      },
-      gangwon: {
-        title: "강원도",
-        category: "강원특별자치도",
-        file: "map-gangwon.png",
-        desc: "동해 바다와 웅장한 태백산맥, 청정 자연 여행지가 가득한 강원권입니다."
-      },
-      chungcheong: {
-        title: "충청도",
-        category: "충청북도, 충청남도, 대전, 세종",
-        file: "map-chungcheong.png",
-        desc: "대한민국의 중심부로서 역사 문화와 자연 힐링을 함께 만날 수 있는 충청권입니다."
-      },
-      jeolla: {
-        title: "전라도",
-        category: "전라북도, 전라남도, 광주광역시",
-        file: "map-jeolla.png",
-        desc: "풍성한 맛의 미식 여행과 아름다운 남해안 풍경, 전통 문화가 숨쉬는 전라권입니다."
-      },
-      gyeongsang: {
-        title: "경상도",
-        category: "경상북도, 경상남도, 부산, 대구, 울산",
-        file: "map-gyeongsang.png",
-        desc: "찬란한 신라·가야의 역사 유적과 활기찬 해양 도시들을 아우르는 경상권입니다."
-      },
-      jeju: {
-        title: "제주도",
-        category: "제주특별자치도",
-        file: "map-jeju.png",
-        desc: "에메랄드빛 바다와 한라산, 유네스코 세계자연유산을 간직한 대한민국 대표 휴양지입니다."
-      }
-    };
+    // 36개 관광 코스 데이터 (6개 권역 x 6개 상품)
+    const PRODUCTS = [
+      // 제주
+      { id: 1, region: '제주', theme: 'RESORT', name: '제주 힐링 투어', desc: '에메랄드빛 함덕 해변과 비자림 숲길 힐링 산책 코스', price: 100000, discountRate: 0.20, likes: 620, rating: 4.9, img: 'https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&w=800&q=80', photoCount: 4 },
+      { id: 2, region: '제주', theme: 'EXPERIENCE', name: '서귀포 바다 서핑 & 스노클링', desc: '중문 해수욕장에서 즐기는 감성 서핑과 해양 액티비티', price: 85000, discountRate: 0.15, likes: 580, rating: 4.8, img: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80', photoCount: 4 },
+      { id: 3, region: '제주', theme: 'CULTURE', name: '제주 전통 해녀 문화 탐방', desc: '성산포 해녀마을과 함께하는 숨비소리 문화 체험', price: 65000, discountRate: 0.10, likes: 430, rating: 4.7, img: 'https://images.unsplash.com/photo-1518684079-3c830dcef090?auto=format&fit=crop&w=800&q=80', photoCount: 4 },
+      { id: 4, region: '제주', theme: 'RESORT', name: '한라산 영실코스 눈꽃 트레킹', desc: '사계절 아름다운 한라산 영실기암과 오백나한 절경', price: 95000, discountRate: 0.15, likes: 510, rating: 4.9, img: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=800&q=80', photoCount: 4 },
+      { id: 5, region: '제주', theme: 'EXPERIENCE', name: '우도 전기스쿠터 해안도로 투어', desc: '산호빛 서빈백사와 검멀레 해변을 누비는 해안 코스', price: 55000, discountRate: 0.10, likes: 490, rating: 4.8, img: 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&w=800&q=80', photoCount: 4 },
+      { id: 6, region: '제주', theme: 'CULTURE', name: '제주 성읍민속마을 초가 체험', desc: '제주 고유의 돌담과 옛 초가가 살아 숨쉬는 역사 마을', price: 45000, discountRate: 0.10, likes: 380, rating: 4.6, img: 'https://images.unsplash.com/photo-1582650625119-3a31f841807d?auto=format&fit=crop&w=800&q=80', photoCount: 4 },
 
-    // DOM 요소 캐싱
-    const regionButtons = document.querySelectorAll(".btn-region");
-    const regionLayers = document.querySelectorAll(".map-region-layer");
-    const regionSelect = document.getElementById("regionSelect");
-    const regionTitle = document.getElementById("regionTitle");
-    const regionDesc = document.getElementById("regionDescription");
-    const regionCategory = document.getElementById("regionCategory");
-    const fileBadge = document.getElementById("fileBadge");
+      // 서울/경기
+      { id: 7, region: '서울/경기', theme: 'CULTURE', name: '경복궁 야간 달빛 기행', desc: '은은한 달빛 아래 펼쳐지는 조선 왕실의 밤 풍경 투어', price: 55000, discountRate: 0.15, likes: 890, rating: 4.9, img: 'https://images.unsplash.com/photo-1538485399081-7191377e8241?auto=format&fit=crop&w=800&q=80', photoCount: 4 },
+      { id: 8, region: '서울/경기', theme: 'RESORT', name: '가평 아침고요수목원 휴양', desc: '축령산 자락의 잣나무 숲과 사계절 정원 산책 코스', price: 70000, discountRate: 0.10, likes: 490, rating: 4.7, img: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80', photoCount: 4 },
+      { id: 9, region: '서울/경기', theme: 'EXPERIENCE', name: '수원 화성 열기구 & 궁도 체험', desc: '유네스코 세계유산 수원화성을 하늘에서 내려다보는 이색 체험', price: 85000, discountRate: 0.15, likes: 670, rating: 4.8, img: 'https://images.unsplash.com/photo-1516483638261-f4dbaf036963?auto=format&fit=crop&w=800&q=80', photoCount: 4 },
+      { id: 10, region: '서울/경기', theme: 'CULTURE', name: '인사동 전통 공예 & 북촌 한옥', desc: '한옥 골목길의 감성과 전통 다도 문화를 함께 배우는 코스', price: 48000, discountRate: 0.10, likes: 450, rating: 4.7, img: 'https://images.unsplash.com/photo-1582650625119-3a31f841807d?auto=format&fit=crop&w=800&q=80', photoCount: 4 },
+      { id: 11, region: '서울/경기', theme: 'RESORT', name: '양평 두물머리 강변 산책', desc: '남한강과 북한강이 만나는 아름다운 일출과 연꽃 정원', price: 50000, discountRate: 0.10, likes: 520, rating: 4.7, img: 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=800&q=80', photoCount: 4 },
+      { id: 12, region: '서울/경기', theme: 'EXPERIENCE', name: '포천 아트밸리 모노레일 체험', desc: '폐채석장에서 에메랄드빛 천주호 호수예술공원으로 변신한 명소', price: 62000, discountRate: 0.15, likes: 410, rating: 4.6, img: 'https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=800&q=80', photoCount: 4 },
 
-    /**
-     * 특정 지역으로 지도를 전환하는 함수
-     * @param {string} regionKey - all, seoul, gangwon, chungcheong, jeolla, gyeongsang, jeju
-     */
-    function switchRegion(regionKey) {
-      if (!REGION_DATA[regionKey]) return;
+      // 강원
+      { id: 13, region: '강원', theme: 'EXPERIENCE', name: '강원 루지 & 알파카 체험', desc: '신나는 알파인 루지 질주와 귀여운 알파카 힐링 파크', price: 50000, discountRate: 0.10, likes: 920, rating: 4.9, img: 'https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?auto=format&fit=crop&w=800&q=80', photoCount: 4 },
+      { id: 14, region: '강원', theme: 'RESORT', name: '설악산 케이블카 & 신흥사 힐링', desc: '권금성 정상의 장엄한 암릉과 동해 바다 조망 코스', price: 75000, discountRate: 0.15, likes: 780, rating: 4.9, img: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=800&q=80', photoCount: 4 },
+      { id: 15, region: '강원', theme: 'RESORT', name: '강릉 경포대 솔향 해변 쉼터', desc: '청명한 동해 바다와 울창한 송림길을 걷는 낭만 코스', price: 60000, discountRate: 0.10, likes: 640, rating: 4.8, img: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80', photoCount: 4 },
+      { id: 16, region: '강원', theme: 'CULTURE', name: '평창 오대산 월정사 전나무숲길', desc: '천년의 숲 피톤치드 산책로와 유서 깊은 고찰 탐방', price: 52000, discountRate: 0.10, likes: 530, rating: 4.8, img: 'https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=800&q=80', photoCount: 4 },
+      { id: 17, region: '강원', theme: 'EXPERIENCE', name: '인제 내린천 짜릿한 래프팅', desc: '시원한 급류를 헤치며 즐기는 대한민국 최고의 수상 레포츠', price: 68000, discountRate: 0.15, likes: 610, rating: 4.7, img: 'https://images.unsplash.com/photo-1530866495561-507c9faab2ed?auto=format&fit=crop&w=800&q=80', photoCount: 4 },
+      { id: 18, region: '강원', theme: 'CULTURE', name: '정선 아리랑 시장 & 레일바이크', desc: '구수한 강원도 산나물 메밀전병과 풍경 열차 레일바이크', price: 58000, discountRate: 0.10, likes: 470, rating: 4.6, img: 'https://images.unsplash.com/photo-1517457373958-b7bdd4587205?auto=format&fit=crop&w=800&q=80', photoCount: 4 },
 
-      // 1. 버튼 활성화 상태 갱신
-      regionButtons.forEach(btn => {
-        btn.classList.toggle("active", btn.dataset.region === regionKey);
+      // 충청
+      { id: 19, region: '충청', theme: 'CULTURE', name: '공주 공산성 & 무령왕릉 백제 역사', desc: '찬란했던 웅진 백제의 숨결을 찾아 떠나는 세계유산 탐방', price: 60000, discountRate: 0.15, likes: 540, rating: 4.8, img: 'https://images.unsplash.com/photo-1582650625119-3a31f841807d?auto=format&fit=crop&w=800&q=80', photoCount: 4 },
+      { id: 20, region: '충청', theme: 'RESORT', name: '단양 팔경 도담삼봉 유람선', desc: '남한강 물줄기 위로 솟은 신비로운 세 봉우리와 석문', price: 55000, discountRate: 0.10, likes: 620, rating: 4.8, img: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80', photoCount: 4 },
+      { id: 21, region: '충청', theme: 'EXPERIENCE', name: '단양 만천하스카이워크 패러글라이딩', desc: '소백산맥 하늘 위를 새처럼 활공하는 익스트림 비행', price: 110000, discountRate: 0.20, likes: 750, rating: 4.9, img: 'https://images.unsplash.com/photo-1516483638261-f4dbaf036963?auto=format&fit=crop&w=800&q=80', photoCount: 4 },
+      { id: 22, region: '충청', theme: 'RESORT', name: '태안 안면도 꽃지해수욕장 일몰', desc: '할미·할아비 바위 너머로 물드는 붉은 서해 낙조 감상', price: 48000, discountRate: 0.10, likes: 490, rating: 4.7, img: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80', photoCount: 4 },
+      { id: 23, region: '충청', theme: 'CULTURE', name: '부여 궁남지 연꽃 & 백제문화단지', desc: '우리나라 최초의 인공 연못 궁남지와 사비 백제 재현관', price: 52000, discountRate: 0.10, likes: 440, rating: 4.7, img: 'https://images.unsplash.com/photo-1538485399081-7191377e8241?auto=format&fit=crop&w=800&q=80', photoCount: 4 },
+      { id: 24, region: '충청', theme: 'EXPERIENCE', name: '제천 청풍호반 케이블카 & 모노레일', desc: '비봉산 정상에서 한눈에 조망하는 충주호 다도해 비경', price: 68000, discountRate: 0.15, likes: 580, rating: 4.8, img: 'https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=800&q=80', photoCount: 4 },
+
+      // 전라
+      { id: 25, region: '전라', theme: 'CULTURE', name: '전주 한옥마을 미식 & 경기전', desc: '고즈넉한 한옥 돌담길과 비빔밥, 떡갈비 미식 풍류 여행', price: 75000, discountRate: 0.15, likes: 810, rating: 4.9, img: 'https://images.unsplash.com/photo-1582650625119-3a31f841807d?auto=format&fit=crop&w=800&q=80', photoCount: 4 },
+      { id: 26, region: '전라', theme: 'RESORT', name: '순천만 국가정원 & 습지 갈대밭', desc: '세계 5대 연안습지와 계절마다 꽃피는 대한민국 제1호 국가정원', price: 65000, discountRate: 0.10, likes: 720, rating: 4.9, img: 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=800&q=80', photoCount: 4 },
+      { id: 27, region: '전라', theme: 'EXPERIENCE', name: '여수 해상케이블카 & 낭만포차 밤바다', desc: '바다 위를 가로지르는 케이블카와 아름다운 여수 밤바다 야경', price: 82000, discountRate: 0.15, likes: 850, rating: 4.9, img: 'https://images.unsplash.com/photo-1518684079-3c830dcef090?auto=format&fit=crop&w=800&q=80', photoCount: 4 },
+      { id: 28, region: '전라', theme: 'RESORT', name: '담양 죽녹원 & 메타세쿼이아길', desc: '사계절 푸른 대나무 숲길과 영화 속 한 장면 같은 가로수길', price: 46000, discountRate: 0.10, likes: 580, rating: 4.8, img: 'https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=800&q=80', photoCount: 4 },
+      { id: 29, region: '전라', theme: 'EXPERIENCE', name: '신안 퍼플섬 보라빛 감성 트레킹', desc: '지붕부터 다리까지 온통 보라색으로 물든 이색 섬 테마 코스', price: 69000, discountRate: 0.15, likes: 630, rating: 4.7, img: 'https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?auto=format&fit=crop&w=800&q=80', photoCount: 4 },
+      { id: 30, region: '전라', theme: 'CULTURE', name: '남원 광한루원 춘향 역사 테마', desc: '이몽룡과 성춘향의 애틋한 사랑이 깃든 조선 대표 정원', price: 44000, discountRate: 0.10, likes: 420, rating: 4.6, img: 'https://images.unsplash.com/photo-1538485399081-7191377e8241?auto=format&fit=crop&w=800&q=80', photoCount: 4 },
+
+      // 경북
+      { id: 31, region: '경북', theme: 'CULTURE', name: '경주 불국사 & 석굴암 신라 역사', desc: '신라 천년의 불교 예술과 과학이 빚어낸 찬란한 문화유산', price: 72000, discountRate: 0.15, likes: 830, rating: 4.9, img: 'https://images.unsplash.com/photo-1582650625119-3a31f841807d?auto=format&fit=crop&w=800&q=80', photoCount: 4 },
+      { id: 32, region: '경북', theme: 'RESORT', name: '울릉도 & 독도 신비의 섬 탐방', desc: '화산섬의 비경과 에메랄드빛 해안 절벽, 민족의 섬 독도', price: 195000, discountRate: 0.20, likes: 960, rating: 5.0, img: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80', photoCount: 4 },
+      { id: 33, region: '경북', theme: 'CULTURE', name: '안동 하회마을 선비 문화 기행', desc: '낙동강 물줄기가 감싸 안은 유서 깊은 전통 양반 가옥 보존마을', price: 65000, discountRate: 0.10, likes: 580, rating: 4.8, img: 'https://images.unsplash.com/photo-1538485399081-7191377e8241?auto=format&fit=crop&w=800&q=80', photoCount: 4 },
+      { id: 34, region: '경북', theme: 'RESORT', name: '포항 호미곶 일출 & 스페이스워크', desc: '상생의 손 너머로 솟아오르는 장엄한 동해 해맞이와 하늘 계단', price: 58000, discountRate: 0.10, likes: 670, rating: 4.8, img: 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=800&q=80', photoCount: 4 },
+      { id: 35, region: '경북', theme: 'EXPERIENCE', name: '문경 에코랄라 모노레일 & 가은오픈세트장', desc: '석탄 박물관과 모노레일을 타고 둘러보는 웅장한 사극 촬영지', price: 54000, discountRate: 0.10, likes: 460, rating: 4.7, img: 'https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=800&q=80', photoCount: 4 },
+      { id: 36, region: '경북', theme: 'EXPERIENCE', name: '영덕 블루로드 해맞이공원 트레킹', desc: '시원한 파도 소리를 벗 삼아 걷는 명품 동해안 해파랑길', price: 49000, discountRate: 0.10, likes: 510, rating: 4.7, img: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=800&q=80', photoCount: 4 }
+    ];
+
+    let currentRegion = '전체';
+    let currentTheme = 'ALL';
+
+    // 지도 권역 선택 처리
+    function selectRegion(regionName) {
+      currentRegion = regionName;
+
+      // 버튼 active 갱신
+      document.querySelectorAll('.btn-map-pill').forEach(btn => {
+        btn.classList.toggle('active', btn.textContent.trim().includes(regionName));
       });
 
-      // 2. 셀렉트 박스 동기화
-      if (regionSelect.value !== regionKey) {
-        regionSelect.value = regionKey;
-      }
+      // 지도 오버레이 갱신
+      const layerMap = {
+        '서울/경기': 'layer-seoul',
+        '강원': 'layer-gangwon',
+        '충청': 'layer-chungcheong',
+        '전라': 'layer-jeolla',
+        '경북': 'layer-gyeongsang',
+        '제주': 'layer-jeju'
+      };
 
-      // 3. 지도 레이어 표시/숨김 제어
-      regionLayers.forEach(layer => {
-        if (layer.dataset.region === regionKey) {
-          layer.classList.add("active");
-        } else {
-          layer.classList.remove("active");
-        }
+      document.querySelectorAll('.map-overlay').forEach(layer => {
+        layer.classList.remove('visible');
       });
 
-      // 4. 정보 패널 텍스트 및 파일명 갱신
-      const info = REGION_DATA[regionKey];
-      regionTitle.textContent = info.title;
-      regionCategory.textContent = info.category;
-      fileBadge.textContent = info.file;
-      regionDesc.textContent = info.desc;
+      if (layerMap[regionName]) {
+        const target = document.getElementById(layerMap[regionName]);
+        if (target) target.classList.add('visible');
+      }
+
+      renderProducts();
     }
 
-    // 버튼 클릭 이벤트 리스너 등록
-    regionButtons.forEach(btn => {
-      btn.addEventListener("click", () => {
-        const selectedRegion = btn.dataset.region;
-        switchRegion(selectedRegion);
+    // 테마 필터링 처리
+    function filterTheme(themeCode) {
+      currentTheme = themeCode;
+      document.querySelectorAll('.btn-theme-filter').forEach(btn => {
+        if (themeCode === 'ALL') {
+          btn.classList.toggle('active', btn.textContent.includes('전체'));
+        } else if (themeCode === 'RESORT') {
+          btn.classList.toggle('active', btn.textContent.includes('휴양지'));
+        } else if (themeCode === 'EXPERIENCE') {
+          btn.classList.toggle('active', btn.textContent.includes('체험'));
+        } else if (themeCode === 'CULTURE') {
+          btn.classList.toggle('active', btn.textContent.includes('문화'));
+        }
       });
-    });
+      renderProducts();
+    }
 
-    // 드롭다운 셀렉트 변경 이벤트 리스너 등록
-    regionSelect.addEventListener("change", (e) => {
-      switchRegion(e.target.value);
+    // 상품 카드 렌더링
+    function renderProducts() {
+      const grid = document.getElementById('productGrid');
+      const countEl = document.getElementById('productCount');
+      if (!grid) return;
+
+      const filtered = PRODUCTS.filter(p => {
+        const matchRegion = (currentRegion === '전체') || (p.region === currentRegion);
+        const matchTheme = (currentTheme === 'ALL') || (p.theme === currentTheme);
+        return matchRegion && matchTheme;
+      });
+
+      countEl.textContent = filtered.length;
+
+      if (filtered.length === 0) {
+        grid.innerHTML = '<div class="empty-results"><p>선택하신 조건에 맞는 여행 상품이 없습니다.</p></div>';
+        return;
+      }
+
+      grid.innerHTML = filtered.map(p => {
+        const memberPrice = Math.round(p.price * (1 - p.discountRate));
+        const themeNames = { 'RESORT': '휴양지', 'EXPERIENCE': '체험', 'CULTURE': '문화/역사' };
+        return `
+          <div class="product-card">
+            <div class="product-thumb-wrap">
+              <img src="${p.img}" alt="${p.name}" class="product-thumb" onerror="this.src='static/img/default-tour.jpg'">
+              <span class="badge-region-tag">${p.region}</span>
+              <span class="badge-photos">📷 ${p.photoCount}장</span>
+            </div>
+            <div class="product-info">
+              <div class="product-theme-pill">${themeNames[p.theme] || '테마'}</div>
+              <h4 class="product-title">${p.name}</h4>
+              <p class="product-desc">${p.desc}</p>
+              <div class="product-meta">
+                <span class="product-rating">⭐ ${p.rating}</span>
+                <span class="product-likes">❤️ ${p.likes}</span>
+              </div>
+              <div class="price-box">
+                <span class="original-price">${p.price.toLocaleString()}원</span>
+                <span class="member-price"><strong>${memberPrice.toLocaleString()}원</strong> (회원 ${Math.round(p.discountRate * 100)}% 우대)</span>
+              </div>
+              <div class="card-action">
+                <a href="http://localhost:5000/products/${p.id}" class="btn-detail-link">상세정보 & 숙박예약 &rarr;</a>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // ==========================================
+    // ⚡ Flask 서버 자동 감지 및 실시간 연동 로직
+    // ==========================================
+    let isServerOnline = false;
+
+    function checkFlaskServer() {
+      fetch('http://localhost:5000/', { mode: 'no-cors', cache: 'no-store' })
+        .then(() => {
+          if (!isServerOnline) {
+            isServerOnline = true;
+            onServerDetected();
+          }
+        })
+        .catch(() => {
+          isServerOnline = false;
+          onServerOffline();
+        });
+    }
+
+    function onServerDetected() {
+      const dot = document.getElementById('pulseDot');
+      const badge = document.getElementById('statusBadgeText');
+      const text = document.getElementById('serverStatusText');
+      if (dot) dot.classList.add('online');
+      if (badge) badge.textContent = '🟢 Flask 웹 서버 실행 중';
+      if (text) {
+        text.innerHTML = '<strong style="color: #4ade80;">🟢 Flask 백엔드 서버가 활성화되었습니다!</strong> 1.5초 후 전체 예약·결제·회원 시스템으로 자동 연결됩니다...';
+      }
+      
+      // 서버 실행 감지 시 1.5초 후 Flask 메인으로 자동 전환
+      setTimeout(() => {
+        window.location.replace('http://localhost:5000/');
+      }, 1500);
+    }
+
+    function onServerOffline() {
+      const dot = document.getElementById('pulseDot');
+      const badge = document.getElementById('statusBadgeText');
+      const text = document.getElementById('serverStatusText');
+      if (dot) dot.classList.remove('online');
+      if (badge) badge.textContent = '⚡ 로컬 독립 모드 동작 중';
+      if (text) {
+        text.innerHTML = '<strong style="color: #facc15;">⚡ 독립 탐색 모드 실행 중</strong> (python app.py 또는 run_server.bat 실행 시 전체 예약·회원·결제 시스템으로 자동 연동됩니다)';
+      }
+    }
+
+    // 페이지 로드 시 즉시 초기화
+    document.addEventListener('DOMContentLoaded', () => {
+      renderProducts();
+      checkFlaskServer();
+      // 1.5초 간격으로 백그라운드 서버 활성화 폴링
+      setInterval(checkFlaskServer, 1500);
     });
   </script>
 </body>
 </html>
-

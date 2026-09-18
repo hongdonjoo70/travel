@@ -4,6 +4,7 @@ from models.tour import TourProduct, Theme, RegionEnum
 main_bp = Blueprint('main', __name__)
 
 @main_bp.route('/')
+@main_bp.route('/index.html')
 def index():
     selected_region = request.args.get('region')
     selected_theme = request.args.get('theme')
