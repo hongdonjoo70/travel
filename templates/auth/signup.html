@@ -1,78 +1,309 @@
 {% extends "base.html" %}
 
-{% block title %}회원가입 - 대한민국 관광 투어{% endblock %}
+{% block title %}회원가입 | 길마중 - 오늘, 더 특별한 여행{% endblock %}
+
+{% block header %}
+<header class="gil-navbar">
+  <div class="gil-nav-container">
+    <!-- 좌측: 브랜드 로고 (길마중 | 오늘, 더 특별한 여행) -->
+    <a href="{{ url_for('main.index') }}" class="gil-brand-logo">
+      <span class="gil-logo-mark">
+        <svg width="26" height="24" viewBox="0 0 28 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M4 14C2.5 8 7 3 14 3C22 3 26 8 25 15C24 20 18 22 10 22C5 22 4.5 17 4 14Z" fill="#3b5e4d"/>
+          <circle cx="10" cy="11" r="3.5" fill="#de6b56"/>
+        </svg>
+      </span>
+      <span class="gil-brand-name">길마중</span>
+      <span class="gil-brand-divider"></span>
+      <span class="gil-brand-sub">오늘, 더 특별한 여행</span>
+    </a>
+
+    <!-- 우측: 내비게이션 메뉴 및 유저 아이콘 -->
+    <div class="gil-nav-right">
+      <nav class="gil-nav-menu" id="gilNavMenu">
+        <a href="{{ url_for('product.list_products') }}" class="gil-menu-item">여행 패키지</a>
+        <a href="{{ url_for('main.index') }}#reviews" class="gil-menu-item">이용 후기</a>
+        <a href="javascript:void(0)" onclick="openHelpNotice()" class="gil-menu-item">고객센터</a>
+      </nav>
+
+      <div class="gil-nav-actions">
+        <a href="{{ url_for('product.list_products') }}" class="gil-action-icon" title="여행지 검색">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+        </a>
+        <a href="{{ url_for('auth.login') }}" class="gil-action-icon" title="내 계정">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+        </a>
+        <button type="button" class="gil-action-icon gil-hamburger-btn" onclick="toggleMobileNav()" title="전체 메뉴">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</header>
+{% endblock %}
 
 {% block content %}
-<div class="auth-wrapper">
-  <div class="auth-card">
-    <div class="auth-header">
-      <span class="auth-badge">회원 전용 혜택</span>
-      <h2>회원가입</h2>
-      <p>가입 즉시 전 권역 관광 상품 <strong>10~20% 특별 우대 할인</strong> 및 후기 작성 권한이 부여됩니다.</p>
+<div class="gil-login-page-wrapper">
+  <!-- 배경 은은한 한국 전통 원형 달항아리/곡선 워터마크 장식 -->
+  <div class="gil-bg-ornament top-right-circle" aria-hidden="true"></div>
+  <div class="gil-bg-ornament bottom-right-circle" aria-hidden="true"></div>
+
+  <div class="gil-login-layout-container">
+    <!-- 좌측 컬럼: 한옥 처마 청사초롱 사진 및 감성 브랜드 카피 (1.5배 확대 적용) -->
+    <div class="gil-hero-section">
+      <div class="gil-hero-photo-wrap">
+        <img src="{{ url_for('static', filename='img/login_hero.jpg') }}" alt="한옥 처마와 청사초롱" class="gil-hero-photo" onerror="this.src='/static/img/default-tour.jpg'">
+      </div>
+
+      <div class="gil-hero-text-content">
+        <span class="gil-hero-subtitle">지금, 떠나기 좋은 순간</span>
+        <h1 class="gil-hero-title">
+          일상이 여행이 되는<br>
+          특별한 경험
+        </h1>
+        <p class="gil-hero-desc">
+          전통의 아름다움과<br>
+          새로운 세상을 만나는 여행,<br>
+          길마중과 함께하세요.
+        </p>
+
+        <!-- 전통 구름 문양 섬세한 라인 아트 -->
+        <div class="gil-traditional-cloud-line" aria-hidden="true">
+          <svg width="150" height="38" viewBox="0 0 150 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M6 24C16 24 20 18 28 18C36 18 40 24 52 24C66 24 72 8 90 8C106 8 110 24 122 24C134 24 138 20 146 20" stroke="#d5c8b5" stroke-width="1.6" stroke-linecap="round"/>
+            <path d="M22 32C30 32 34 28 42 28C52 28 58 32 68 32C80 32 86 24 98 24C108 24 114 32 126 32" stroke="#e1d6c5" stroke-width="1.3" stroke-linecap="round"/>
+          </svg>
+        </div>
+
+        <!-- 은은한 4포인트 스파클 별 장식 -->
+        <div class="gil-sparkle-mark" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="#cfbeaa" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 0L14.2 9.8L24 12L14.2 14.2L12 24L9.8 14.2L0 12L9.8 9.8L12 0Z"/>
+          </svg>
+        </div>
+      </div>
     </div>
 
-    <form method="POST" action="{{ url_for('auth.signup') }}" class="form-body">
-      {{ form.hidden_tag() }}
-
-      <div class="form-group">
-        {{ form.username.label(class="form-label") }}
-        {{ form.username(class="form-control", placeholder="로그인에 사용할 아이디(4~20자)") }}
-        {% for error in form.username.errors %}
-          <div class="form-error">{{ error }}</div>
-        {% endfor %}
-      </div>
-
-      <div class="form-group">
-        {{ form.name.label(class="form-label") }}
-        {{ form.name(class="form-control", placeholder="실명 또는 사용자 이름") }}
-        {% for error in form.name.errors %}
-          <div class="form-error">{{ error }}</div>
-        {% endfor %}
-      </div>
-
-      <div class="form-group">
-        {{ form.email.label(class="form-label") }}
-        {{ form.email(class="form-control", placeholder="예: user@example.com") }}
-        {% for error in form.email.errors %}
-          <div class="form-error">{{ error }}</div>
-        {% endfor %}
-      </div>
-
-      <div class="form-group">
-        {{ form.phone.label(class="form-label") }}
-        {{ form.phone(class="form-control", placeholder="예: 010-1234-5678") }}
-        {% for error in form.phone.errors %}
-          <div class="form-error">{{ error }}</div>
-        {% endfor %}
-      </div>
-
-      <div class="form-row">
-        <div class="form-group col">
-          {{ form.password.label(class="form-label") }}
-          {{ form.password(class="form-control", placeholder="비밀번호(6자 이상)") }}
-          {% for error in form.password.errors %}
-            <div class="form-error">{{ error }}</div>
-          {% endfor %}
+    <!-- 우측 컬럼: 순백의 플로팅 회원가입 카드 -->
+    <div class="gil-card-section">
+      <div class="gil-login-card gil-signup-card">
+        <!-- 상단 전통 색동 띠 및 매듭 장식 심볼 -->
+        <div class="gil-saekdong-symbol">
+          <div class="saekdong-ribbon">
+            <span class="stripe stripe-navy"></span>
+            <span class="stripe stripe-teal"></span>
+            <span class="stripe stripe-red"></span>
+            <span class="stripe stripe-yellow"></span>
+            <span class="stripe stripe-green"></span>
+          </div>
+          <div class="saekdong-knot">
+            <svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="10" cy="10" r="3.2" fill="#c2413a"/>
+              <circle cx="7" cy="8" r="1.8" fill="#d97d74"/>
+              <circle cx="13" cy="8" r="1.8" fill="#d97d74"/>
+              <circle cx="10" cy="13" r="1.8" fill="#d97d74"/>
+            </svg>
+          </div>
         </div>
 
-        <div class="form-group col">
-          {{ form.confirm_password.label(class="form-label") }}
-          {{ form.confirm_password(class="form-control", placeholder="비밀번호 재확인") }}
-          {% for error in form.confirm_password.errors %}
-            <div class="form-error">{{ error }}</div>
-          {% endfor %}
+        <!-- 타이틀 & 가입 혜택 안내 -->
+        <h2 class="gil-card-title">회원가입</h2>
+        <p class="gil-card-sub">
+          길마중에 오신 것을 환영합니다.<br>
+          간편 가입하고 전 상품 우대 혜택을 누려보세요.
+        </p>
+
+        <!-- 혜택 배지 팁 -->
+        <div class="gil-signup-benefit-tip">
+          <span class="benefit-tag">회원 혜택</span>
+          <span>전 상품 <strong>10~20% 특별 할인</strong> 및 추천 숙박 연계 예약</span>
+        </div>
+
+        <!-- 회원가입 폼 -->
+        <form method="POST" action="{{ url_for('auth.signup') }}" class="gil-form" id="gilSignupForm">
+          {{ form.hidden_tag() }}
+
+          <!-- 1) 아이디 입력 필드 -->
+          <div class="gil-input-group">
+            <div class="gil-input-wrap">
+              <span class="gil-input-icon">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#8c9aa8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+              </span>
+              {{ form.username(class="gil-input-field", placeholder="로그인 아이디 (4~20자)", autocomplete="username") }}
+            </div>
+            {% for error in form.username.errors %}
+              <div class="gil-field-error">{{ error }}</div>
+            {% endfor %}
+          </div>
+
+          <!-- 2) 실명 / 이름 입력 필드 -->
+          <div class="gil-input-group">
+            <div class="gil-input-wrap">
+              <span class="gil-input-icon">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#8c9aa8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="8.5" cy="7" r="4"></circle>
+                  <polyline points="17 11 19 13 23 9"></polyline>
+                </svg>
+              </span>
+              {{ form.name(class="gil-input-field", placeholder="실명 또는 사용자 이름", autocomplete="name") }}
+            </div>
+            {% for error in form.name.errors %}
+              <div class="gil-field-error">{{ error }}</div>
+            {% endfor %}
+          </div>
+
+          <!-- 3) 이메일 입력 필드 -->
+          <div class="gil-input-group">
+            <div class="gil-input-wrap">
+              <span class="gil-input-icon">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#8c9aa8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                  <polyline points="22,6 12,13 2,6"></polyline>
+                </svg>
+              </span>
+              {{ form.email(class="gil-input-field", placeholder="이메일 주소 (예: user@example.com)", autocomplete="email") }}
+            </div>
+            {% for error in form.email.errors %}
+              <div class="gil-field-error">{{ error }}</div>
+            {% endfor %}
+          </div>
+
+          <!-- 4) 휴대폰 번호 입력 필드 -->
+          <div class="gil-input-group">
+            <div class="gil-input-wrap">
+              <span class="gil-input-icon">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#8c9aa8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
+                  <line x1="12" y1="18" x2="12.01" y2="18"></line>
+                </svg>
+              </span>
+              {{ form.phone(class="gil-input-field", placeholder="휴대폰 번호 (예: 010-1234-5678)", autocomplete="tel") }}
+            </div>
+            {% for error in form.phone.errors %}
+              <div class="gil-field-error">{{ error }}</div>
+            {% endfor %}
+          </div>
+
+          <!-- 5) 비밀번호 & 비밀번호 확인 (2단 그리드) -->
+          <div class="gil-form-row">
+            <!-- 비밀번호 -->
+            <div class="gil-input-group">
+              <div class="gil-input-wrap">
+                <span class="gil-input-icon">
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#8c9aa8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                  </svg>
+                </span>
+                {{ form.password(class="gil-input-field gil-pwd-field", id="signupPassword", placeholder="비밀번호 (6자 이상)", autocomplete="new-password") }}
+                <button type="button" class="gil-pwd-toggle-btn" onclick="toggleSignupPasswordVisibility('signupPassword', 'signupEyeIcon1')" title="비밀번호 보이기/숨기기" aria-label="비밀번호 보이기/숨기기">
+                  <svg id="signupEyeIcon1" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                  </svg>
+                </button>
+              </div>
+              {% for error in form.password.errors %}
+                <div class="gil-field-error">{{ error }}</div>
+              {% endfor %}
+            </div>
+
+            <!-- 비밀번호 확인 -->
+            <div class="gil-input-group">
+              <div class="gil-input-wrap">
+                <span class="gil-input-icon">
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#8c9aa8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                  </svg>
+                </span>
+                {{ form.confirm_password(class="gil-input-field gil-pwd-field", id="signupConfirmPassword", placeholder="비밀번호 확인", autocomplete="new-password") }}
+                <button type="button" class="gil-pwd-toggle-btn" onclick="toggleSignupPasswordVisibility('signupConfirmPassword', 'signupEyeIcon2')" title="비밀번호 확인 보이기/숨기기" aria-label="비밀번호 확인 보이기/숨기기">
+                  <svg id="signupEyeIcon2" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                  </svg>
+                </button>
+              </div>
+              {% for error in form.confirm_password.errors %}
+                <div class="gil-field-error">{{ error }}</div>
+              {% endfor %}
+            </div>
+          </div>
+
+          <!-- 가입 제출 버튼 -->
+          <button type="submit" class="gil-btn-login" style="margin-top: 0.5rem;">회원가입 완료하기</button>
+        </form>
+
+        <!-- 구분선 -->
+        <div class="gil-divider">
+          <span>또는</span>
+        </div>
+
+        <!-- 카드 하단 로그인 안내 -->
+        <div class="gil-card-footer">
+          <p class="footer-prompt-msg">이미 계정이 있으신가요?</p>
+          <a href="{{ url_for('auth.login') }}" class="btn-gil-signup">로그인하기 &gt;</a>
         </div>
       </div>
-
-      <div class="form-action">
-        {{ form.submit(class="btn-submit") }}
-      </div>
-    </form>
-
-    <div class="auth-footer">
-      이미 계정이 있으신가요? <a href="{{ url_for('auth.login') }}">로그인하기</a>
     </div>
   </div>
 </div>
 {% endblock %}
 
+{% block footer %}
+<!-- 로그인/회원가입 화면은 무백그라운드 미니멀 룩을 위해 하단 대형 푸터를 생략합니다. -->
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// 비밀번호 보이기/숨기기 토글
+function toggleSignupPasswordVisibility(inputId, iconId) {
+  const pwdInput = document.getElementById(inputId);
+  const eyeIcon = document.getElementById(iconId);
+  if (!pwdInput || !eyeIcon) return;
+
+  if (pwdInput.type === 'password') {
+    pwdInput.type = 'text';
+    eyeIcon.innerHTML = `
+      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+      <line x1="1" y1="1" x2="23" y2="23"></line>
+    `;
+    eyeIcon.setAttribute('stroke', '#1e3a5f');
+  } else {
+    pwdInput.type = 'password';
+    eyeIcon.innerHTML = `
+      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+      <circle cx="12" cy="12" r="3"></circle>
+    `;
+    eyeIcon.setAttribute('stroke', '#94a3b8');
+  }
+}
+
+// 고객센터 안내
+function openHelpNotice() {
+  alert("대한민국 관광지 안내 [길마중 고객센터]\n\n• 운영시간: 평일 09:00 ~ 18:00\n• 문의전화: 1588-0000\n• 이메일: support@gilmajung.co.kr");
+}
+
+// 모바일 햄버거 메뉴 토글
+function toggleMobileNav() {
+  const menu = document.getElementById('gilNavMenu');
+  if (menu) {
+    menu.classList.toggle('mobile-open');
+  }
+}
+</script>
+{% endblock %}

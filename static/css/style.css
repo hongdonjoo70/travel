@@ -2343,5 +2343,689 @@ a {
   }
 }
 
+/* ==========================================
+   Gilmajung (길마중) Custom Login Page Styles
+   ========================================== */
+.gil-navbar {
+  background: #faf8f5;
+  border-bottom: 1px solid rgba(226, 219, 208, 0.7);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  width: 100%;
+}
+
+.gil-nav-container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 1.15rem 2.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+}
+
+.gil-brand-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  text-decoration: none;
+}
+
+.gil-logo-mark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gil-brand-name {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #1f2937;
+  letter-spacing: -0.03em;
+}
+
+.gil-brand-divider {
+  width: 1px;
+  height: 12px;
+  background: #d4cbbe;
+  margin: 0 0.15rem;
+}
+
+.gil-brand-sub {
+  font-size: 0.82rem;
+  color: #78716c;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+.gil-nav-right {
+  display: flex;
+  align-items: center;
+  gap: 2.25rem;
+}
+
+.gil-nav-menu {
+  display: flex;
+  align-items: center;
+  gap: 1.75rem;
+}
+
+.gil-menu-item {
+  font-size: 0.88rem;
+  color: #4b5563;
+  font-weight: 600;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.gil-menu-item:hover {
+  color: #1e3a5f;
+}
+
+.gil-nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.gil-action-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  color: #4b5563;
+  text-decoration: none;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.gil-action-icon:hover {
+  background: rgba(0, 0, 0, 0.05);
+  color: #1e3a5f;
+}
+
+.gil-action-icon.active {
+  color: #1e3a5f;
+}
+
+.gil-hamburger-btn {
+  display: none;
+}
+
+/* 로그인 메인 래퍼 */
+.gil-login-page-wrapper {
+  background: #f6f4ee;
+  min-height: calc(100vh - 72px);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1.5rem;
+}
+
+/* 배경 전통 곡선 워터마크 */
+.gil-bg-ornament {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.top-right-circle {
+  top: -100px;
+  right: -80px;
+  width: 320px;
+  height: 320px;
+  border: 24px solid rgba(225, 215, 198, 0.45);
+}
+
+.bottom-right-circle {
+  bottom: -110px;
+  right: 40px;
+  width: 270px;
+  height: 270px;
+  border: 20px solid rgba(225, 215, 198, 0.35);
+}
+
+.gil-login-layout-container {
+  max-width: 1320px;
+  width: 100%;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1.25fr 0.85fr;
+  gap: 3.5rem;
+  align-items: center;
+  position: relative;
+  z-index: 2;
+}
+
+/* 좌측 히어로 비주얼 & 브랜드 카피 */
+.gil-hero-section {
+  display: flex;
+  align-items: center;
+  gap: 2.75rem;
+  position: relative;
+}
+
+.gil-hero-photo-wrap {
+  width: 440px;
+  height: 705px; /* 기존 470px 대비 1.5배 확대 */
+  border-radius: 14px;
+  overflow: hidden;
+  flex-shrink: 0;
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.12);
+  border: 1px solid rgba(220, 210, 195, 0.6);
+}
+
+.gil-hero-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.gil-hero-text-content {
+  flex: 1;
+  position: relative;
+}
+
+.gil-hero-subtitle {
+  display: block;
+  font-size: 0.95rem;
+  color: #78716c;
+  font-weight: 600;
+  margin-bottom: 0.85rem;
+  letter-spacing: -0.01em;
+}
+
+.gil-hero-title {
+  font-size: 2.15rem;
+  font-weight: 800;
+  line-height: 1.35;
+  color: #1f2937;
+  margin-bottom: 1.15rem;
+  letter-spacing: -0.03em;
+}
+
+.gil-hero-desc {
+  font-size: 0.96rem;
+  color: #52525b;
+  line-height: 1.8;
+  margin-bottom: 1.4rem;
+}
+
+.gil-traditional-cloud-line {
+  margin-bottom: 1.25rem;
+  opacity: 0.85;
+}
+
+.gil-sparkle-mark {
+  position: absolute;
+  right: 15px;
+  bottom: -10px;
+  opacity: 0.75;
+}
+
+/* 우측 플로팅 로그인 카드 */
+.gil-card-section {
+  display: flex;
+  justify-content: center;
+}
+
+.gil-login-card {
+  background: #ffffff;
+  border-radius: 18px;
+  border: 1px solid #ebe5da;
+  box-shadow: 0 18px 40px rgba(30, 41, 59, 0.05);
+  padding: 2.5rem 2.25rem 2.25rem;
+  max-width: 410px;
+  width: 100%;
+  text-align: center;
+  position: relative;
+}
+
+/* 색동 띠 및 매듭 장식 */
+.gil-saekdong-symbol {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.saekdong-ribbon {
+  display: flex;
+  width: 44px;
+  height: 42px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+  border-radius: 1px;
+  overflow: hidden;
+}
+
+.stripe {
+  flex: 1;
+  height: 100%;
+}
+
+.stripe-navy { background: #1c355e; }
+.stripe-teal { background: #4a7c8f; }
+.stripe-red { background: #c53c37; }
+.stripe-yellow { background: #e0aa3e; }
+.stripe-green { background: #3d7d66; }
+
+.saekdong-knot {
+  margin-top: -3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gil-card-title {
+  font-size: 1.55rem;
+  font-weight: 800;
+  color: #111827;
+  margin-bottom: 0.4rem;
+  letter-spacing: -0.02em;
+}
+
+.gil-card-sub {
+  font-size: 0.82rem;
+  color: #6b7280;
+  line-height: 1.55;
+  margin-bottom: 1.5rem;
+}
+
+/* 폼 입력 필드 */
+.gil-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.gil-input-group {
+  margin-bottom: 0.8rem;
+  text-align: left;
+}
+
+.gil-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.gil-input-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  pointer-events: none;
+}
+
+.gil-input-field {
+  width: 100%;
+  height: 46px;
+  padding: 0 14px 0 42px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  color: #1f2937;
+  background: #ffffff;
+  transition: all 0.2s ease;
+}
+
+.gil-pwd-field {
+  padding-right: 42px;
+}
+
+.gil-input-field:focus {
+  border-color: #1e3a5f;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(30, 58, 95, 0.1);
+}
+
+.gil-input-field::placeholder {
+  color: #9ca3af;
+  font-size: 0.85rem;
+}
+
+.gil-pwd-toggle-btn {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 4px;
+}
+
+.gil-field-error {
+  font-size: 0.75rem;
+  color: #dc2626;
+  margin-top: 4px;
+  margin-left: 2px;
+}
+
+/* 옵션 행 (로그인 유지 & 계정 찾기) */
+.gil-options-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 0.75rem 0 1.25rem;
+  font-size: 0.78rem;
+  color: #6b7280;
+}
+
+.gil-remember-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.gil-check-input {
+  cursor: pointer;
+  accent-color: #1e3a5f;
+}
+
+.gil-find-links a {
+  color: #6b7280;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.gil-find-links a:hover {
+  color: #1e3a5f;
+  text-decoration: underline;
+}
+
+.gil-sep {
+  margin: 0 4px;
+  color: #d1d5db;
+}
+
+/* 주 로그인 버튼 */
+.gil-btn-login {
+  width: 100%;
+  height: 46px;
+  background: #1e3a5f;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 10px rgba(30, 58, 95, 0.2);
+}
+
+.gil-btn-login:hover {
+  background: #162b46;
+  box-shadow: 0 6px 14px rgba(30, 58, 95, 0.3);
+}
+
+/* 구분선 */
+.gil-divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 1.25rem 0 1.15rem;
+  color: #9ca3af;
+  font-size: 0.75rem;
+}
+
+.gil-divider::before,
+.gil-divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.gil-divider span {
+  padding: 0 0.75rem;
+}
+
+/* 소셜 간편 로그인 3종 */
+.gil-social-container {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+  margin-bottom: 1.35rem;
+}
+
+.gil-social-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  height: 38px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 0 6px;
+}
+
+.gil-social-btn:hover {
+  background: #f9fafb;
+  border-color: #d1d5db;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+}
+
+.social-btn-text {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #374151;
+  white-space: nowrap;
+}
+
+.social-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+  font-size: 0.65rem;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.badge-naver {
+  background: #03c75a;
+  color: #ffffff;
+}
+
+.badge-kakao {
+  background: #fee500;
+  color: #000000;
+  border-radius: 50%;
+}
+
+.badge-google {
+  background: transparent;
+}
+
+/* 카드 푸터 회원가입 유도 */
+.gil-card-footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.45rem;
+  border-top: 1px solid #f3f4f6;
+  padding-top: 1rem;
+}
+
+.footer-prompt-msg {
+  font-size: 0.78rem;
+  color: #6b7280;
+  margin: 0;
+}
+
+.btn-gil-signup {
+  display: inline-block;
+  padding: 0.38rem 1.15rem;
+  background: #ffffff;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #374151;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.btn-gil-signup:hover {
+  background: #f3f4f6;
+  border-color: #9ca3af;
+}
+
+/* 테스트 계정 퀵 팁 */
+.gil-demo-pill {
+  margin-top: 0.85rem;
+  background: #f8fafc;
+  border: 1px dashed #cbd5e1;
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 0.72rem;
+  color: #64748b;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  transition: all 0.2s;
+}
+
+.gil-demo-pill:hover {
+  background: #eff6ff;
+  border-color: #93c5fd;
+  color: #1d4ed8;
+}
+
+.demo-badge {
+  background: #e0e7ff;
+  color: #3730a3;
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 1px 4px;
+  border-radius: 3px;
+}
+
+/* 회원가입 전용 카드 및 폼 그리드 */
+.gil-signup-card {
+  max-width: 480px;
+  padding: 2.25rem 2.25rem 2rem;
+}
+
+.gil-signup-benefit-tip {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 8px;
+  padding: 0.65rem 0.9rem;
+  font-size: 0.8rem;
+  color: #166534;
+  margin-bottom: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.benefit-tag {
+  background: #16a34a;
+  color: #ffffff;
+  font-size: 0.7rem;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.gil-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+/* ==========================================
+   길마중 로그인/회원가입 페이지 반응형 미디어 쿼리
+   ========================================== */
+@media (max-width: 992px) {
+  .gil-login-layout-container {
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+    max-width: 620px;
+  }
+  .gil-hero-section {
+    justify-content: center;
+    flex-direction: column;
+    text-align: center;
+  }
+  .gil-hero-photo-wrap {
+    width: 360px;
+    height: 520px;
+  }
+  .gil-traditional-cloud-line {
+    margin: 0 auto 1rem;
+  }
+  .gil-sparkle-mark {
+    display: none;
+  }
+  .gil-nav-menu {
+    display: none;
+  }
+  .gil-nav-menu.mobile-open {
+    display: flex;
+    position: absolute;
+    top: 68px;
+    left: 0;
+    right: 0;
+    background: #faf8f5;
+    border-bottom: 1px solid #e5e7eb;
+    padding: 1.25rem 2rem;
+    flex-direction: column;
+    gap: 1rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  }
+  .gil-hamburger-btn {
+    display: flex;
+  }
+}
+
+@media (max-width: 540px) {
+  .gil-hero-section {
+    display: none; /* 초소형 모바일 화면에서는 카드에 집중 */
+  }
+  .gil-login-card {
+    padding: 2.25rem 1.25rem 1.75rem;
+  }
+  .gil-signup-card {
+    padding: 2rem 1.25rem 1.5rem;
+  }
+  .gil-form-row {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+  .gil-social-container {
+    grid-template-columns: 1fr;
+    gap: 0.45rem;
+  }
+  .gil-brand-sub,
+  .gil-brand-divider {
+    display: none;
+  }
+}
+
+
 
 

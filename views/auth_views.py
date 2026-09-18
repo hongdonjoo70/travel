@@ -43,7 +43,8 @@ def login():
     if form.validate_on_submit():
         user = User.query.filter_by(username=form.username.data.strip()).first()
         if user and user.check_password(form.password.data):
-            login_user(user)
+            remember = form.remember_me.data if hasattr(form, 'remember_me') else False
+            login_user(user, remember=remember)
             # 사용자의 카트가 없으면 생성 보장
             if not user.cart:
                 cart = Cart(user_id=user.id)
