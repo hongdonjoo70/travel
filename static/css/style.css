@@ -1332,6 +1332,111 @@ a {
   cursor: pointer;
 }
 
+/* 비회원 바로 구매 영역 스타일 */
+.guest-purchase-box {
+  background: #ffffff;
+  border: 2px solid #e2e8f0;
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+  margin-bottom: 1.25rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+}
+
+.guest-purchase-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 0.75rem;
+}
+
+.btn-guest-action {
+  width: 100%;
+  text-align: center;
+  background: #0f172a;
+  color: #ffffff;
+  padding: 0.9rem;
+  border-radius: var(--radius-sm);
+  font-weight: 700;
+  font-size: 0.95rem;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+}
+
+.btn-guest-action:hover {
+  background: #1e293b;
+  transform: translateY(-1px);
+}
+
+.guest-benefit-prompt {
+  background: #f8fafc;
+  border: 1px dashed #cbd5e1;
+  border-radius: var(--radius-md);
+  padding: 1.1rem;
+}
+
+.benefit-badge-line {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: #334155;
+  margin-bottom: 0.85rem;
+}
+
+.badge-discount-tip {
+  background: #fee2e2;
+  color: #ef4444;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  flex-shrink: 0;
+}
+
+.guest-checkout-alert {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  color: #166534;
+  padding: 0.85rem 1rem;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+}
+
+.guest-checkout-alert .alert-icon {
+  font-size: 1.2rem;
+}
+
+.guest-checkout-alert p {
+  margin-top: 0.2rem;
+  font-size: 0.82rem;
+  color: #15803d;
+}
+
+.guest-input-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.guest-input-grid .full-width {
+  grid-column: 1 / -1;
+}
+
+.guest-discount-tip-box {
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  padding: 0.6rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  color: #1e40af;
+  margin-bottom: 0.75rem;
+}
+
 /* Reviews Section */
 .reviews-section {
   background: #fff;

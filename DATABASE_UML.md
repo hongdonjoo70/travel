@@ -1,375 +1,289 @@
-# Database Models & UML Specification
+# 📊 데이터베이스 모델링 및 ER 다이어그램 (ERD) 명세서
 
-본 문서는 Flask SQLAlchemy 기반의 데이터베이스 모델 정의를 바탕으로 작성된 **UML 클래스 다이어그램(Class Diagram)**, **ERD(Entity-Relationship Diagram)** 및 **테이블/관계 상세 명세서**입니다.
-
----
-
-## 1. UML 클래스 다이어그램 (Class Diagram)
-
-객체 지향 모델 관점에서의 클래스 구조, 필드, 타입 및 클래스 간 연관 관계를 나타냅니다.
+본 문서는 Flask 관광지 안내 & 여행 투어 웹 애플리케이션의 **물리 데이터베이스 설계(Database Modeling)**, **ER 다이어그램 (Entity-Relationship Diagram)** 및 **테이블별 상세 명세**입니다.
 
 ---
 
-## 2. ERD 다이어그램 (Entity-Relationship Diagram)
-
-물리 데이터베이스 관점의 테이블 간 관계, 외래키(FK) 및 제약조건을 나타냅니다.
-
-[one.google.com/ai/credits](https://one.google.com/ai/credits)---
-
-## 3. 엔티티 상세 명세 (Entity Specifications)
-
-### 3.1. User (사용자)
-
-- **설명**: 시스템 사용자 계정 정보
-- **테이블명**: `user`
-
-| 필드명            | 데이터 타입                 | 제약 조건         | 설명                                                    |
-| :---------------- | :-------------------------- | :---------------- | :------------------------------------------------------ |
-| `id`            | `Integer`                 | PK, Autoincrement | 사용자 고유 번호                                        |
-| `email`         | `String(50)`              | UNIQUE, NOT NULL  | 이메일                                                  |
-| `userid`        | `String(50)`              | UNIQUE, NOT NULL  | 사용자 로그인 아이디                                    |
-| `password`      | `String(300)`             | NOT NULL          | 해시 암호화된 비밀번호                                  |
-| `username`      | `String(80)`              | UNIQUE, NOT NULL  | 닉네임                                                  |
-| `gender`        | `String(10)`              | NOT NULL          | 성별 (Enum)                                             |
-| `phone`         | `String(30)`              | UNIQUE, NOT NULL  | 휴대폰 번호                                             |
-| `profile_image` | `String(200)`             | NOT NULL          | 프로필 이미지 경로 (Default:`'user_img/default.jpg'`) |
-| `created_at`    | `DateTime(timezone=True)` | NOT NULL          | 계정 생성일시                                           |
-
----
-
-### 3.2. Places (여행지)
-
-- **설명**: 여행지, 축제, 액티비티 정보
-- **테이블명**: `places`
-
-| 필드명                   | 데이터 타입                 | 제약 조건         | 설명                                  |
-| :----------------------- | :-------------------------- | :---------------- | :------------------------------------ |
-| `id`                   | `Integer`                 | PK, Autoincrement | 여행지 고유 번호                      |
-| `type`                 | `String(10)`              | NOT NULL          | 분류 타입 (여행지, 축제, 액티비티 등) |
-| `province`             | `String(120)`             | NOT NULL          | 시/도                                 |
-| `city`                 | `String(120)`             | NOT NULL          | 시/군/구                              |
-| `name`                 | `String(120)`             | NOT NULL          | 여행지 이름                           |
-| `address`              | `String(200)`             | NOT NULL          | 상세 주소                             |
-| `contact_number`       | `String(50)`              | NULLABLE          | 대표 연락처                           |
-| `website_url`          | `String(200)`             | NULLABLE          | 공식 웹사이트 주소                    |
-| `closed_days`          | `String(200)`             | NULLABLE          | 휴무일 정보                           |
-| `operating_hours`      | `String(200)`             | NOT NULL          | 운영시간                              |
-| `admission_type`       | `String(10)`              | NOT NULL          | 입장료 유무 (Enum)                    |
-| `parking_available`    | `String(10)`              | NOT NULL          | 주차 가능 여부 (Enum)                 |
-| `parking_fee`          | `String(120)`             | NULLABLE          | 주차 요금 정보                        |
-| `requires_reservation` | `String(10)`              | NOT NULL          | 예약 필요 여부 (Enum)                 |
-| `amenities`            | `Text`                    | NULLABLE          | 편의시설 및 부대시설 정보             |
-| `description`          | `Text`                    | NOT NULL          | 소개글 및 상세 설명                   |
-| `image_urls`           | `Text`                    | NOT NULL          | 이미지 URL 목록 (JSON/구분자 텍스트)  |
-| `latitude`             | `Float`                   | NOT NULL          | 위치 위도                             |
-| `longitude`            | `Float`                   | NOT NULL          | 위치 경도                             |
-| `created_at`           | `DateTime(timezone=True)` | NOT NULL          | 등록일시                              |
-| `updated_at`           | `DateTime(timezone=True)` | NOT NULL          | 수정일시                              |
-
----
-
-### 3.3. Review (여행지 후기)
-
-- **설명**: 사용자가 작성한 여행지 후기
-- **테이블명**: `review`
-
-| 필드명           | 데이터 타입                 | 제약 조건                  | 설명                        |
-| :--------------- | :-------------------------- | :------------------------- | :-------------------------- |
-| `id`           | `Integer`                 | PK, Autoincrement          | 리뷰 고유 번호              |
-| `title`        | `String(120)`             | NOT NULL                   | 리뷰 제목                   |
-| `content`      | `Text`                    | NOT NULL                   | 리뷰 본문 내용              |
-| `like_count`   | `Integer`                 | NOT NULL, Default: 0       | 추천/좋아요(별점) 수        |
-| `review_image` | `Text`                    | NOT NULL, Default:`'[]'` | 이미지 URL 목록 (JSON 포맷) |
-| `created_at`   | `DateTime(timezone=True)` | NOT NULL                   | 작성일시                    |
-| `updated_at`   | `DateTime(timezone=True)` | NOT NULL                   | 수정일시                    |
-| `user_id`      | `Integer`                 | FK (`user.id`, CASCADE)  | 작성자 ID                   |
-
----
-
-### 3.4. Comment (댓글)
-
-- **설명**: 리뷰 및 대상 게시글에 달리는 댓글 및 대댓글
-- **테이블명**: `comment`
-
-| 필드명          | 데이터 타입                 | 제약 조건                              | 설명                         |
-| :-------------- | :-------------------------- | :------------------------------------- | :--------------------------- |
-| `id`          | `Integer`                 | PK, Autoincrement                      | 댓글 고유 번호               |
-| `content`     | `Text`                    | NOT NULL                               | 댓글 본문                    |
-| `like_count`  | `Integer`                 | NOT NULL, Default: 0                   | 좋아요 수                    |
-| `target_type` | `String(20)`              | NOT NULL                               | 대상 엔티티 구분 (다형성)    |
-| `target_id`   | `Integer`                 | NOT NULL                               | 대상 엔티티 ID (다형성)      |
-| `created_at`  | `DateTime(timezone=True)` | NOT NULL                               | 작성일시                     |
-| `updated_at`  | `DateTime(timezone=True)` | NOT NULL                               | 수정일시                     |
-| `user_id`     | `Integer`                 | FK (`user.id`, CASCADE)              | 작성자 ID                    |
-| `parent_id`   | `Integer`                 | FK (`comment.id`, CASCADE), NULLABLE | 상위 댓글 ID (대댓글 구현용) |
-| `review_id`   | `Integer`                 | FK (`review.id`, CASCADE)            | 연결된 리뷰 ID               |
-
----
-
-### 3.5. MyTravelLog (나의 여행로그)
-
-- **설명**: 사용자의 개인 여행 기록/블로그 게시글
-- **테이블명**: `my_travel_log`
-
-| 필드명         | 데이터 타입                 | 제약 조건                  | 설명                        |
-| :------------- | :-------------------------- | :------------------------- | :-------------------------- |
-| `id`         | `Integer`                 | PK, Autoincrement          | 게시글 고유 번호            |
-| `title`      | `String(120)`             | NOT NULL                   | 여행로그 제목               |
-| `content`    | `Text`                    | NOT NULL                   | 본문 내용                   |
-| `image`      | `Text`                    | NOT NULL, Default:`'[]'` | 이미지 URL 목록 (JSON 포맷) |
-| `like_count` | `Integer`                 | NOT NULL, Default: 0       | 좋아요(별점) 수             |
-| `created_at` | `DateTime(timezone=True)` | NOT NULL                   | 작성일시                    |
-| `updated_at` | `DateTime(timezone=True)` | NOT NULL                   | 수정일시                    |
-| `user_id`    | `Integer`                 | FK (`user.id`, CASCADE)  | 작성자 ID                   |
-
----
-
-### 3.6. Wishlist (찜목록)
-
-- **설명**: 사용자가 찜한 여행지 매핑 (다대다 연결 테이블)
-- **테이블명**: `wishlist`
-
-| 필드명         | 데이터 타입                 | 제약 조건                   | 설명           |
-| :------------- | :-------------------------- | :-------------------------- | :------------- |
-| `id`         | `Integer`                 | PK, Autoincrement           | 찜 식별 번호   |
-| `created_at` | `DateTime(timezone=True)` | NOT NULL                    | 찜 등록일시    |
-| `updated_at` | `DateTime(timezone=True)` | NOT NULL                    | 수정일시       |
-| `user_id`    | `Integer`                 | FK (`user.id`, CASCADE)   | 찜한 사용자 ID |
-| `places_id`  | `Integer`                 | FK (`places.id`, CASCADE) | 찜한 여행지 ID |
-
----
-
-### 3.7. Like (좋아요)
-
-- **설명**: 다형성(Generic) 타겟 대상 좋아요 기록
-- **테이블명**: `like`
-
-| 필드명          | 데이터 타입    | 제약 조건                  | 설명                                                |
-| :-------------- | :------------- | :------------------------- | :-------------------------------------------------- |
-| `id`          | `Integer`    | PK, Autoincrement          | 좋아요 고유 번호                                    |
-| `user_id`     | `Integer`    | FK (`user.id`), NOT NULL | 누른 사용자 ID                                      |
-| `target_type` | `String(20)` | NOT NULL                   | 좋아요 대상 모델명 (`Review`, `MyTravelLog` 등) |
-| `target_id`   | `Integer`    | NOT NULL                   | 좋아요 대상 엔티티 ID                               |
-| `created_at`  | `DateTime`   | Default:`now()`          | 등록일시                                            |
-
-> **Unique 제약조건**: `(user_id, target_type, target_id)`
-> 동일 사용자가 특정 대상에 중복으로 좋아요를 누르는 것을 DB 레벨에서 방지 (`uix_user_target_like`).
-
----
-
-## 4. 모델 설계 핵심 특징
-
-1. **사용자 종속성 및 CASCADE 무결성**:
-
-   - `User` 삭제 시 해당 유저가 작성한 모든 후기(`Review`), 댓글(`Comment`), 여행로그(`MyTravelLog`), 찜목록(`Wishlist`)이 DB 레벨에서 안전하게 자동 삭제되도록 `ondelete='CASCADE'` 설정이 적용되어 있습니다.
-2. **계층형 대댓글(Self-Referencing Relationship)**:
-
-   - `Comment` 모델의 `parent_id`가 `comment.id`를 참조하는 자가 참조(Self-Referencing) 구조를 갖추고 있습니다.
-   - 부모 댓글이 삭제되면 하위 답글들도 연쇄적으로 삭제되도록 `cascade='all, delete'`가 설정되어 있습니다.
-3. **다형성 구조(Generic Polymorphism)**:
-
-   - `Like` 및 `Comment` 모델에 `target_type`과 `target_id`가 포함되어 있어, 특정 테이블 하나에 국한되지 않고 다양한 게시물 유형을 범용적으로 참조할 수 있는 구조입니다.
+## 1. ER 다이어그램 (ER Diagram)
 
 ```mermaid
 erDiagram
-    USER ||--o{ REVIEW : "작성 (1:N)"
-    USER ||--o{ COMMENT : "작성 (1:N)"
-    USER ||--o{ MY_TRAVEL_LOG : "작성 (1:N)"
-    USER ||--o{ WISHLIST : "보유 (1:N)"
-    USER ||--o{ LIKE : "누름 (1:N)"
-
-    PLACES ||--o{ WISHLIST : "찜됨 (1:N)"
-    REVIEW ||--o{ COMMENT : "댓글 보유 (1:N)"
-    COMMENT ||--o{ COMMENT : "대댓글 (계층 관계)"
-
-    USER {
-        int id PK "자동 증가"
-        string email UK "고유값, NOT NULL"
-        string userid UK "고유값, NOT NULL"
-        string password "NOT NULL"
-        string username UK "고유값, NOT NULL"
-        string gender "NOT NULL, Enum"
-        string phone UK "고유값, NOT NULL"
-        string profile_image "기본값 제공, NOT NULL"
-        datetime created_at "자동 생성, NOT NULL"
-    }
-
-    PLACES {
-        int id PK "자동 증가"
-        string type "NOT NULL"
-        string province "NOT NULL"
-        string city "NOT NULL"
-        string name "NOT NULL"
-        string address "NOT NULL"
-        string contact_number "NULL 허용"
-        string website_url "NULL 허용"
-        string closed_days "NULL 허용"
-        string operating_hours "NOT NULL"
-        string admission_type "NOT NULL, Enum"
-        string parking_available "NOT NULL, Enum"
-        string parking_fee "NULL 허용"
-        string requires_reservation "NOT NULL, Enum"
-        text amenities "NULL 허용"
-        text description "NOT NULL"
-        text image_urls "NOT NULL"
-        float latitude "NOT NULL"
-        float longitude "NOT NULL"
-        datetime created_at "자동 생성, NOT NULL"
-        datetime updated_at "자동 갱신, NOT NULL"
-    }
-
-    REVIEW {
-        int id PK "자동 증가"
-        int user_id FK "user.id (CASCADE)"
-        string title "NOT NULL"
-        text content "NOT NULL"
-        int like_count "기본값 0, NOT NULL"
-        text review_image "기본값 '[]', NOT NULL"
-        datetime created_at "자동 생성, NOT NULL"
-        datetime updated_at "자동 갱신, NOT NULL"
-    }
-
-    COMMENT {
-        int id PK "자동 증가"
-        int user_id FK "user.id (CASCADE)"
-        int review_id FK "review.id (CASCADE)"
-        int parent_id FK "comment.id (CASCADE, NULLABLE)"
-        text content "NOT NULL"
-        int like_count "기본값 0, NOT NULL"
-        string target_type "NOT NULL"
-        int target_id "NOT NULL"
-        datetime created_at "자동 생성, NOT NULL"
-        datetime updated_at "자동 갱신, NOT NULL"
-    }
-
-    MY_TRAVEL_LOG {
-        int id PK "자동 증가"
-        int user_id FK "user.id (CASCADE)"
-        string title "NOT NULL"
-        text content "NOT NULL"
-        text image "기본값 '[]', NOT NULL"
-        int like_count "기본값 0, NOT NULL"
-        datetime created_at "자동 생성, NOT NULL"
-        datetime updated_at "자동 갱신, NOT NULL"
-    }
-
-    WISHLIST {
-        int id PK "자동 증가"
-        int user_id FK "user.id (CASCADE)"
-        int places_id FK "places.id (CASCADE)"
-        datetime created_at "자동 생성, NOT NULL"
-        datetime updated_at "자동 갱신, NOT NULL"
-    }
-
-    LIKE {
-        int id PK "자동 증가"
-        int user_id FK "user.id"
-        string target_type "NOT NULL"
-        int target_id "NOT NULL"
-        datetime created_at "기본값 now()"
-    }
-```
-
-```mermaid
-classDiagram
-    direction TB
-
-    class User {
-        +Integer id : PK
-        +String(50) email : UNIQUE
-        +String(50) userid : UNIQUE
-        +String(300) password
-        +String(80) username : UNIQUE
-        +String(10) gender
-        +String(30) phone : UNIQUE
-        +String(200) profile_image
-        +DateTime created_at
-    }
-
-    class Places {
-        +Integer id : PK
-        +String(10) type
-        +String(120) province
-        +String(120) city
-        +String(120) name
-        +String(200) address
-        +String(50) contact_number
-        +String(200) website_url
-        +String(200) closed_days
-        +String(200) operating_hours
-        +String(10) admission_type
-        +String(10) parking_available
-        +String(120) parking_fee
-        +String(10) requires_reservation
-        +Text amenities
-        +Text description
-        +Text image_urls
-        +Float latitude
-        +Float longitude
-        +DateTime created_at
-        +DateTime updated_at
-    }
-
-    class Review {
-        +Integer id : PK
-        +Integer user_id : FK
-        +String(120) title
-        +Text content
-        +Integer like_count
-        +Text review_image
-        +DateTime created_at
-        +DateTime updated_at
-    }
-
-    class Comment {
-        +Integer id : PK
-        +Integer user_id : FK
-        +Integer review_id : FK
-        +Integer parent_id : FK
-        +Text content
-        +Integer like_count
-        +String(20) target_type
-        +Integer target_id
-        +DateTime created_at
-        +DateTime updated_at
-    }
-
-    class MyTravelLog {
-        +Integer id : PK
-        +Integer user_id : FK
-        +String(120) title
-        +Text content
-        +Text image
-        +Integer like_count
-        +DateTime created_at
-        +DateTime updated_at
-    }
-
-    class Wishlist {
-        +Integer id : PK
-        +Integer user_id : FK
-        +Integer places_id : FK
-        +DateTime created_at
-        +DateTime updated_at
-    }
-
-    class Like {
-        +Integer id : PK
-        +Integer user_id : FK
-        +String(20) target_type
-        +Integer target_id
-        +DateTime created_at
-    }
-
     %% Relationships
-    User "1" --> "0..*" Review : writes (reviews)
-    User "1" --> "0..*" Comment : writes (comments)
-    User "1" --> "0..*" MyTravelLog : creates (travel_logs)
-    User "1" --> "0..*" Wishlist : owns
-    User "1" --> "0..*" Like : casts
+    USERS ||--o| CARTS : "소유 (1:1)"
+    CARTS ||--o{ CART_ITEMS : "보유 (1:N)"
+    TOUR_PRODUCTS ||--o{ CART_ITEMS : "담김 (1:N)"
 
-    Places "1" --> "0..*" Wishlist : bookmarked_in
+    THEMES ||--o{ TOUR_PRODUCTS : "분류 (1:N)"
 
-    Review "1" --> "0..*" Comment : contains
-    Comment "0..1" --> "0..*" Comment : replies (self-referencing)
+    USERS ||--o{ PRODUCT_LIKES : "추천 클릭 (1:N)"
+    TOUR_PRODUCTS ||--o{ PRODUCT_LIKES : "추천 받음 (1:N)"
+
+    USERS |o--o{ ORDERS : "주문 (0..1:N, 비회원 허용)"
+    ORDERS ||--|{ ORDER_ITEMS : "주문 품목 포함 (1:N)"
+    TOUR_PRODUCTS ||--o{ ORDER_ITEMS : "주문됨 (1:N)"
+    ORDERS ||--|| PAYMENTS : "결제 매핑 (1:1)"
+
+    USERS ||--o{ REVIEWS : "작성 (1:N)"
+    TOUR_PRODUCTS ||--o{ REVIEWS : "후기 보유 (1:N)"
+
+    %% Entity Definitions
+    USERS {
+        int id PK "고유 번호 (Auto Increment)"
+        varchar username UK "로그인 ID (고유값, Not Null)"
+        varchar password_hash "단방향 암호화 비밀번호 (Not Null)"
+        varchar name "회원 이름 (Not Null)"
+        varchar email UK "이메일 주소 (고유값, Not Null)"
+        varchar phone UK "휴대폰 번호 (고유값, Not Null)"
+        varchar role "회원 권한 (MEMBER, ADMIN)"
+        datetime created_at "가입 일시"
+    }
+
+    THEMES {
+        int id PK "테마 고유 번호 (Auto Increment)"
+        varchar code UK "테마 코드 (RESORT, EXPERIENCE 등)"
+        varchar name UK "테마 명칭 (휴양지, 체험 등)"
+        varchar description "테마 상세 설명"
+        boolean is_active "활성화 여부 (Default True)"
+    }
+
+    TOUR_PRODUCTS {
+        int id PK "상품 고유 번호 (Auto Increment)"
+        varchar name "관광 상품명 (Not Null)"
+        text description "상세 소개글 (Not Null)"
+        varchar region "6대 권역 (서울/경기, 강원, 충청, 전라, 경북, 제주)"
+        int theme_id FK "테마 외래키 (themes.id)"
+        int original_price "정상 판매가 (원)"
+        float member_discount_rate "회원 할인율 (예: 0.15 = 15%)"
+        int recommendation_count "누적 추천 수 (Default 0)"
+        varchar image_url "대표 이미지 경로/URL"
+        datetime created_at "등록 일시"
+    }
+
+    PRODUCT_LIKES {
+        int id PK "추천 고유 번호 (Auto Increment)"
+        int user_id FK "추천한 회원 ID (users.id, Cascade)"
+        int product_id FK "추천된 상품 ID (tour_products.id, Cascade)"
+        datetime created_at "추천 일시"
+    }
+
+    CARTS {
+        int id PK "장바구니 번호 (Auto Increment)"
+        int user_id FK "소유 회원 ID (users.id, Unique, Cascade)"
+        datetime updated_at "최종 수정 일시"
+    }
+
+    CART_ITEMS {
+        int id PK "품목 번호 (Auto Increment)"
+        int cart_id FK "장바구니 ID (carts.id, Cascade)"
+        int product_id FK "관광 상품 ID (tour_products.id, Cascade)"
+        int quantity "담은 수량 (인원수, Not Null)"
+        datetime created_at "담은 일시"
+    }
+
+    ORDERS {
+        int id PK "주문 번호 (Auto Increment)"
+        varchar order_no UK "주문 식별 번호 (예: ORD-2026...)"
+        int user_id FK "주문 회원 ID (users.id, Nullable: 비회원 허용)"
+        varchar guest_name "비회원 주문자 성함 (Nullable)"
+        varchar guest_email "비회원 이메일 (Nullable)"
+        varchar guest_phone "비회원 연락처 (Nullable)"
+        int original_amount "정상 상품가 총액 (원)"
+        int discount_amount "회원 할인 적용 총액 (원)"
+        int final_amount "최종 실 결제 금액 (원)"
+        varchar status "주문 상태 (PENDING, COMPLETED, CANCELLED)"
+        datetime created_at "주문 일시"
+    }
+
+    ORDER_ITEMS {
+        int id PK "주문 상세 번호 (Auto Increment)"
+        int order_id FK "연결된 주문 ID (orders.id, Cascade)"
+        int product_id FK "주문된 상품 ID (tour_products.id)"
+        int quantity "주문 수량 (Not Null)"
+        int unit_price "주문 시점 적용 단가 (원)"
+        int discount_applied "개당 할인 적용액 (원)"
+        int subtotal_price "항목별 소계 금액 (원)"
+    }
+
+    PAYMENTS {
+        int id PK "결제 번호 (Auto Increment)"
+        int order_id FK "연결된 주문 ID (orders.id, Unique, Cascade)"
+        varchar payment_method "결제 수단 (CARD, EASY_PAY, BANK_TRANSFER)"
+        int paid_amount "실제 승인 결제 금액 (원)"
+        varchar transaction_id UK "PG 거래 승인 식별 번호"
+        varchar status "결제 상태 (SUCCESS, FAILED, CANCELLED)"
+        datetime paid_at "결제 승인 일시"
+    }
+
+    REVIEWS {
+        int id PK "후기 번호 (Auto Increment)"
+        int user_id FK "작성자 회원 ID (users.id, Cascade)"
+        int product_id FK "대상 관광 상품 ID (tour_products.id, Cascade)"
+        varchar title "후기 제목 (Not Null)"
+        text content "후기 내용 (Not Null)"
+        int rating "별점 평점 (1~5점)"
+        datetime created_at "작성 일시"
+        datetime updated_at "수정 일시"
+    }
 ```
+
+---
+
+## 2. 테이블별 상세 설계 명세서
+
+### 2.1. `users` (회원 정보)
+- **설명**: 사이트에 가입한 회원 계정 정보 관리 (1인 1계정)
+
+| 컬럼명 | 데이터 타입 | 제약 조건 | 기본값 | 설명 |
+| :--- | :--- | :--- | :--- | :--- |
+| `id` | `INTEGER` | PK, Auto Increment | - | 회원 식별 고유 번호 |
+| `username` | `VARCHAR(50)` | UNIQUE, NOT NULL | - | 로그인 아이디 (4~20자) |
+| `password_hash` | `VARCHAR(255)` | NOT NULL | - | Werkzeug 단방향 해시 암호화 비밀번호 |
+| `name` | `VARCHAR(80)` | NOT NULL | - | 사용자 실명 / 이름 |
+| `email` | `VARCHAR(120)` | UNIQUE, NOT NULL | - | 이메일 주소 |
+| `phone` | `VARCHAR(30)` | UNIQUE, NOT NULL | - | 휴대폰 번호 (중복 불가) |
+| `role` | `VARCHAR(20)` | NOT NULL | `'MEMBER'` | 계정 권한 (`MEMBER`, `ADMIN`) |
+| `created_at` | `DATETIME` | NOT NULL | `CURRENT_TIMESTAMP` | 회원 가입 일시 |
+
+---
+
+### 2.2. `themes` (테마 카테고리)
+- **설명**: 관광 상품을 분류하는 테마 마스터 테이블 (휴양지, 체험 외 신규 테마 무한 확장 가능)
+
+| 컬럼명 | 데이터 타입 | 제약 조건 | 기본값 | 설명 |
+| :--- | :--- | :--- | :--- | :--- |
+| `id` | `INTEGER` | PK, Auto Increment | - | 테마 식별 번호 |
+| `code` | `VARCHAR(50)` | UNIQUE, NOT NULL | - | 테마 코드명 (`RESORT`, `EXPERIENCE`, `CULTURE` 등) |
+| `name` | `VARCHAR(50)` | UNIQUE, NOT NULL | - | 테마 표시 명칭 ('휴양지', '체험', '문화/역사' 등) |
+| `description` | `VARCHAR(200)` | NULLABLE | - | 테마에 대한 간단한 소개글 |
+| `is_active` | `BOOLEAN` | NOT NULL | `True` | 노출/활성화 여부 |
+
+---
+
+### 2.3. `tour_products` (관광 여행 상품)
+- **설명**: 6대 권역별 관광지 및 여행 패키지 코스 정보
+
+| 컬럼명 | 데이터 타입 | 제약 조건 | 기본값 | 설명 |
+| :--- | :--- | :--- | :--- | :--- |
+| `id` | `INTEGER` | PK, Auto Increment | - | 상품 고유 식별 번호 |
+| `name` | `VARCHAR(150)` | NOT NULL | - | 관광 여행 상품명 |
+| `description` | `TEXT` | NOT NULL | - | 상품 상세 소개 및 코스 안내 |
+| `region` | `VARCHAR(50)` | NOT NULL | - | 6대 권역 (`서울/경기`, `강원`, `충청`, `전라`, `경북`, `제주`) |
+| `theme_id` | `INTEGER` | FK (`themes.id`), NOT NULL | - | 분류 테마 외래키 |
+| `original_price` | `INTEGER` | NOT NULL | - | 비회원 정상 판매 가격 (원) |
+| `member_discount_rate` | `FLOAT` | NOT NULL | `0.15` | 회원 특별 할인율 (0.10 ~ 0.20) |
+| `recommendation_count` | `INTEGER` | NOT NULL | `0` | 누적 추천(좋아요) 수 (랭킹 정렬 기준) |
+| `image_url` | `VARCHAR(255)` | NULLABLE | 기본 이미지 | 대표 썸네일 이미지 주소 |
+| `created_at` | `DATETIME` | NOT NULL | `CURRENT_TIMESTAMP` | 상품 등록 일시 |
+
+---
+
+### 2.4. `product_likes` (상품 추천 이력)
+- **설명**: 회원의 관광 상품 추천(좋아요) 기록 (1인 1상품 1회 추천 제약)
+
+| 컬럼명 | 데이터 타입 | 제약 조건 | 설명 |
+| :--- | :--- | :--- | :--- |
+| `id` | `INTEGER` | PK, Auto Increment | 추천 식별 번호 |
+| `user_id` | `INTEGER` | FK (`users.id`, CASCADE), NOT NULL | 추천한 회원 ID |
+| `product_id` | `INTEGER` | FK (`tour_products.id`, CASCADE), NOT NULL | 추천된 상품 ID |
+| `created_at` | `DATETIME` | NOT NULL | 추천 등록 일시 |
+
+> **Unique 제약조건**: `UNIQUE(user_id, product_id)` → 동일 사용자의 중복 추천 방지
+
+---
+
+### 2.5. `carts` & `cart_items` (장바구니)
+- **설명**: 로그인 회원의 여행 상품 보관함
+
+#### `carts` (회원별 장바구니 헤더)
+| 컬럼명 | 데이터 타입 | 제약 조건 | 설명 |
+| :--- | :--- | :--- | :--- |
+| `id` | `INTEGER` | PK, Auto Increment | 장바구니 식별 번호 |
+| `user_id` | `INTEGER` | FK (`users.id`, CASCADE), UNIQUE, NOT NULL | 장바구니 소유 회원 ID (1:1 매핑) |
+| `updated_at` | `DATETIME` | NOT NULL | 최종 변경 일시 |
+
+#### `cart_items` (장바구니 상세 품목)
+| 컬럼명 | 데이터 타입 | 제약 조건 | 설명 |
+| :--- | :--- | :--- | :--- |
+| `id` | `INTEGER` | PK, Auto Increment | 장바구니 품목 식별 번호 |
+| `cart_id` | `INTEGER` | FK (`carts.id`, CASCADE), NOT NULL | 연결된 장바구니 ID |
+| `product_id` | `INTEGER` | FK (`tour_products.id`, CASCADE), NOT NULL | 담은 관광 상품 ID |
+| `quantity` | `INTEGER` | NOT NULL (기본 1) | 선택한 인원/수량 (1~99) |
+| `created_at` | `DATETIME` | NOT NULL | 장바구니 담은 일시 |
+
+> **Unique 제약조건**: `UNIQUE(cart_id, product_id)` → 장바구니 내 동일 상품 중복 등록 시 수량만 증가
+
+---
+
+### 2.6. `orders` & `order_items` (주문 및 예약 내역)
+- **설명**: 회원 및 비회원의 여행 상품 주문 내역과 결제 금액 스냅샷 보존
+
+#### `orders` (주문 헤더)
+| 컬럼명 | 데이터 타입 | 제약 조건 | 설명 |
+| :--- | :--- | :--- | :--- |
+| `id` | `INTEGER` | PK, Auto Increment | 주문 고유 번호 |
+| `order_no` | `VARCHAR(64)` | UNIQUE, NOT NULL | 고유 주문 식별 번호 (`ORD-2026...`) |
+| `user_id` | `INTEGER` | FK (`users.id`, CASCADE), **NULLABLE** | 주문 회원 ID (**비회원 주문 시 NULL**) |
+| `guest_name` | `VARCHAR(80)` | **NULLABLE** | 비회원 예약자 이름 (비회원 결제 시 필수) |
+| `guest_email` | `VARCHAR(120)` | **NULLABLE** | 비회원 예약 확인서 이메일 |
+| `guest_phone` | `VARCHAR(30)` | **NULLABLE** | 비회원 연락처 |
+| `original_amount` | `INTEGER` | NOT NULL | 정상 상품 금액 합계 (정가 기준) |
+| `discount_amount` | `INTEGER` | NOT NULL, 기본 0 | 회원 우대 할인 적용 총액 (비회원은 0) |
+| `final_amount` | `INTEGER` | NOT NULL | 최종 결제 금액 (`original_amount - discount_amount`) |
+| `status` | `VARCHAR(20)` | NOT NULL, 기본 `'COMPLETED'` | 주문 상태 (`PENDING`, `COMPLETED`, `CANCELLED`) |
+| `created_at` | `DATETIME` | NOT NULL | 주문 발생 일시 |
+
+#### `order_items` (주문 상세 품목)
+| 컬럼명 | 데이터 타입 | 제약 조건 | 설명 |
+| :--- | :--- | :--- | :--- |
+| `id` | `INTEGER` | PK, Auto Increment | 주문 항목 식별 번호 |
+| `order_id` | `INTEGER` | FK (`orders.id`, CASCADE), NOT NULL | 연결된 주문 ID |
+| `product_id` | `INTEGER` | FK (`tour_products.id`), NOT NULL | 구매한 관광 상품 ID |
+| `quantity` | `INTEGER` | NOT NULL | 주문 인원/수량 |
+| `unit_price` | `INTEGER` | NOT NULL | 주문 시점 적용 단가 |
+| `discount_applied` | `INTEGER` | NOT NULL, 기본 0 | 품목별 적용된 회원 할인액 |
+| `subtotal_price` | `INTEGER` | NOT NULL | 항목 소계 금액 (`unit_price * quantity`) |
+
+---
+
+### 2.7. `payments` (결제 내역)
+- **설명**: 주문에 대한 모의 결제 트랜잭션 기록 (1:1 매핑)
+
+| 컬럼명 | 데이터 타입 | 제약 조건 | 설명 |
+| :--- | :--- | :--- | :--- |
+| `id` | `INTEGER` | PK, Auto Increment | 결제 식별 번호 |
+| `order_id` | `INTEGER` | FK (`orders.id`, CASCADE), UNIQUE, NOT NULL | 결제 대상 주문 ID |
+| `payment_method` | `VARCHAR(30)` | NOT NULL | 결제 수단 (`CARD`, `EASY_PAY`, `BANK_TRANSFER`) |
+| `paid_amount` | `INTEGER` | NOT NULL | 승인 완료된 결제 금액 (원) |
+| `transaction_id` | `VARCHAR(100)` | UNIQUE, NOT NULL | PG 결제 승인 고유 번호 (`TX-...`) |
+| `status` | `VARCHAR(20)` | NOT NULL, 기본 `'SUCCESS'` | 결제 상태 (`SUCCESS`, `FAILED`, `REFUNDED`) |
+| `paid_at` | `DATETIME` | NOT NULL | 결제 승인 일시 |
+
+---
+
+### 2.8. `reviews` (여행 후기)
+- **설명**: 회원이 이용 후 작성한 관광 상품 리뷰
+
+| 컬럼명 | 데이터 타입 | 제약 조건 | 설명 |
+| :--- | :--- | :--- | :--- |
+| `id` | `INTEGER` | PK, Auto Increment | 후기 식별 번호 |
+| `user_id` | `INTEGER` | FK (`users.id`, CASCADE), NOT NULL | 작성 회원 ID |
+| `product_id` | `INTEGER` | FK (`tour_products.id`, CASCADE), NOT NULL | 후기 대상 관광 상품 ID |
+| `title` | `VARCHAR(150)` | NOT NULL | 후기 제목 |
+| `content` | `TEXT` | NOT NULL | 후기 본문 내용 |
+| `rating` | `INTEGER` | NOT NULL, 기본 5 | 별점 점수 (1 ~ 5점) |
+| `created_at` | `DATETIME` | NOT NULL | 후기 등록 일시 |
+| `updated_at` | `DATETIME` | NOT NULL | 후기 최종 수정 일시 |
+
+---
+
+## 3. 주요 무결성 및 관계 설계 특징
+
+1. **회원/비회원 주문 통합 설계 (`orders`)**:
+   - `user_id` 컬럼을 `NULLABLE`로 지정하여, 회원 주문뿐만 아니라 비회원의 **[비회원 바로 구매하기]** 주문도 한 테이블에서 통합 관리합니다.
+   - 비회원일 경우 `guest_name`, `guest_email`, `guest_phone`을 보관하며 `discount_amount = 0`으로 정가 결제됩니다.
+2. **외래키 제약조건 및 연쇄 삭제 (CASCADE)**:
+   - 회원이 탈퇴(`User` 삭제)할 경우 해당 회원의 장바구니(`Cart`), 작성 후기(`Review`), 추천 이력(`ProductLike`)이 자동 연쇄 삭제되도록 `ondelete='CASCADE'`가 지정되어 데이터 고아(Orphan) 현상을 방지합니다.
+3. **1인 1회 추천 무결성 (`ProductLike`)**:
+   - `(user_id, product_id)`의 복합 유니크 인덱스를 통해 동일 상품에 대한 중복 추천을 DB 레벨에서 완벽하게 차단합니다.
+4. **결제 이력 불변성 (`OrderItem` 금액 스냅샷)**:
+   - 관광 상품의 가격이나 회원 할인율이 향후 변경되더라도, 과거 주문 내역의 `unit_price`, `discount_applied`, `subtotal_price`는 주문 시점의 스냅샷 가격 그대로 보존됩니다.

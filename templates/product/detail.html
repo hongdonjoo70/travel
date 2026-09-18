@@ -89,25 +89,54 @@
       <!-- 구매 및 장바구니 폼 -->
       <div class="order-action-box">
         {% if current_user.is_authenticated %}
-          <form action="{{ url_for('cart.add_to_cart') }}" method="POST" class="cart-form">
+          <form action="{{ url_for('cart.add_to_cart') }}" method="POST" class="cart-form" id="memberOrderForm">
             {{ cart_form.hidden_tag() }}
             <div class="qty-selector">
               <label for="quantity">수량 / 인원:</label>
-              {{ cart_form.quantity(class="qty-input", min=1, max=99) }}
+              {{ cart_form.quantity(class="qty-input", id="memberQuantity", min=1, max=99) }}
             </div>
             <div class="btn-group-action">
               {{ cart_form.submit(class="btn-secondary-action") }}
-              <a href="{{ url_for('order.checkout', product_id=product.id, quantity=1) }}" class="btn-primary-action">
+              <button type="button" class="btn-primary-action" onclick="goToMemberCheckout()">
                 즉시 예약/결제하기
-              </a>
+              </button>
             </div>
           </form>
+          <script>
+            function goToMemberCheckout() {
+              const qty = document.getElementById('memberQuantity').value || 1;
+              location.href = "{{ url_for('order.checkout', product_id=product.id) }}&quantity=" + qty;
+            }
+          </script>
         {% else %}
           <div class="login-prompt-box">
-            <p>여행 상품 예약 및 장바구니 담기는 회원 전용 서비스입니다.</p>
-            <div class="btn-group-action">
-              <a href="{{ url_for('auth.login', next=request.path) }}" class="btn-primary-action">로그인하고 할인 결제</a>
-              <a href="{{ url_for('auth.signup') }}" class="btn-secondary-action">간편 회원가입</a>
+            <!-- 비회원 바로 구매 영역 -->
+            <div class="guest-purchase-box">
+              <h4 class="guest-purchase-title">🛒 비회원 일반 구매</h4>
+              <form action="{{ url_for('order.checkout') }}" method="GET" class="guest-order-form">
+                <input type="hidden" name="product_id" value="{{ product.id }}">
+                <div class="qty-selector">
+                  <label for="guest_quantity">수량 / 인원:</label>
+                  <input type="number" id="guest_quantity" name="quantity" value="1" min="1" max="99" class="qty-input">
+                </div>
+                <div class="btn-group-action" style="margin-top: 0.75rem;">
+                  <button type="submit" class="btn-guest-action">
+                    비회원 바로 구매하기 (정가 {{ "{:,}".format(product.original_price) }}원)
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            <!-- 회원 우대 할인 안내 및 전환 버튼 -->
+            <div class="guest-benefit-prompt">
+              <div class="benefit-badge-line">
+                <span class="badge-discount-tip">🎉 회원 혜택</span>
+                <span>회원 가입/로그인 시 <strong>{{ "{:,}".format(product.get_discount_amount(True)) }}원 ({{ (product.member_discount_rate * 100)|int }}%) 특별 할인</strong> 적용!</span>
+              </div>
+              <div class="btn-group-action">
+                <a href="{{ url_for('auth.login', next=request.path) }}" class="btn-primary-action">로그인하고 할인 결제</a>
+                <a href="{{ url_for('auth.signup') }}" class="btn-secondary-action">간편 회원가입</a>
+              </div>
             </div>
           </div>
         {% endif %}

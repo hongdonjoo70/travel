@@ -9,9 +9,8 @@ from models.order import Order, OrderItem, Payment
 order_bp = Blueprint('order', __name__, url_prefix='/order')
 
 @order_bp.route('/checkout')
-@login_required
 def checkout():
-    # 단일 상품 바로 구매 vs 장바구니 전체 결제
+    is_member = current_user.is_authenticated
     direct_product_id = request.args.get('product_id', type=int)
     quantity = request.args.get('quantity', 1, type=int)
 
@@ -22,18 +21,22 @@ def checkout():
     if direct_product_id:
         product = TourProduct.query.get_or_404(direct_product_id)
         subtotal_orig = product.original_price * quantity
-        subtotal_fin = product.get_discounted_price(is_member=True) * quantity
+        subtotal_fin = product.get_discounted_price(is_member=is_member) * quantity
         items_to_checkout.append({
             'product': product,
             'quantity': quantity,
             'original_price': product.original_price,
-            'final_price': product.get_discounted_price(is_member=True),
+            'final_price': product.get_discounted_price(is_member=is_member),
             'subtotal_original': subtotal_orig,
             'subtotal_final': subtotal_fin
         })
         total_original = subtotal_orig
         total_final = subtotal_fin
     else:
+        if not is_member:
+            flash('비회원 구매는 상품 상세 페이지에서 바로 구매를 이용해주세요.', 'info')
+            return redirect(url_for('product.list_products'))
+
         cart = Cart.query.filter_by(user_id=current_user.id).first()
         if not cart or cart.items.count() == 0:
             flash('결제할 장바구니 상품이 없습니다.', 'warning')
@@ -62,12 +65,13 @@ def checkout():
         total_discount=total_discount,
         total_final=total_final,
         direct_product_id=direct_product_id,
-        quantity=quantity
+        quantity=quantity,
+        is_member=is_member
     )
 
 @order_bp.route('/pay', methods=['POST'])
-@login_required
 def process_payment():
+    is_member = current_user.is_authenticated
     direct_product_id = request.form.get('direct_product_id', type=int)
     quantity = request.form.get('quantity', 1, type=int)
     payment_method = request.form.get('payment_method', 'CARD')
@@ -76,10 +80,22 @@ def process_payment():
     total_fin = 0
     order_items_data = []
 
+    guest_name = None
+    guest_email = None
+    guest_phone = None
+    user_id = None
+
+    if not is_member:
+        guest_name = request.form.get('guest_name', '').strip() or '비회원 고객'
+        guest_email = request.form.get('guest_email', '').strip()
+        guest_phone = request.form.get('guest_phone', '').strip()
+    else:
+        user_id = current_user.id
+
     if direct_product_id:
         product = TourProduct.query.get_or_404(direct_product_id)
-        unit_price = product.get_discounted_price(is_member=True)
-        discount = product.get_discount_amount(is_member=True)
+        unit_price = product.get_discounted_price(is_member=is_member)
+        discount = product.get_discount_amount(is_member=is_member)
         subtotal = unit_price * quantity
         total_orig = product.original_price * quantity
         total_fin = subtotal
@@ -92,6 +108,10 @@ def process_payment():
             'subtotal_price': subtotal
         })
     else:
+        if not is_member:
+            flash('비회원은 바로 구매만 가능합니다.', 'danger')
+            return redirect(url_for('product.list_products'))
+
         cart = Cart.query.filter_by(user_id=current_user.id).first()
         if not cart or cart.items.count() == 0:
             flash('결제할 상품이 없습니다.', 'danger')
@@ -114,10 +134,13 @@ def process_payment():
 
     total_discount = total_orig - total_fin
 
-    # 주문 객체 생성
+    # 주문 객체 생성 (회원/비회원 공통)
     order = Order(
         order_no=Order.generate_order_no(),
-        user_id=current_user.id,
+        user_id=user_id,
+        guest_name=guest_name,
+        guest_email=guest_email,
+        guest_phone=guest_phone,
         original_amount=total_orig,
         discount_amount=total_discount,
         final_amount=total_fin,
@@ -149,19 +172,21 @@ def process_payment():
     db.session.add(payment)
 
     # 장바구니 결제인 경우 장바구니 비우기
-    if not direct_product_id:
+    if is_member and not direct_product_id:
         cart = Cart.query.filter_by(user_id=current_user.id).first()
         if cart:
             cart.clear()
 
     db.session.commit()
-    flash('결제가 안전하게 완료되었습니다! 회원 우대 할인이 적용되었습니다.', 'success')
+    if is_member:
+        flash('결제가 안전하게 완료되었습니다! 회원 우대 할인이 적용되었습니다.', 'success')
+    else:
+        flash('비회원 예약 및 결제가 안전하게 완료되었습니다! (정가 적용)', 'success')
     return redirect(url_for('order.complete', order_id=order.id))
 
 @order_bp.route('/complete/<int:order_id>')
-@login_required
 def complete(order_id):
-    order = Order.query.filter_by(id=order_id, user_id=current_user.id).first_or_404()
+    order = Order.query.get_or_404(order_id)
     return render_template('order/complete.html', order=order)
 
 @order_bp.route('/history')

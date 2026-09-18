@@ -102,6 +102,7 @@
                   </button>
                 </form>
               {% else %}
+                <a href="{{ url_for('order.checkout', product_id=p.id, quantity=1) }}" class="btn-cart" title="비회원 바로 구매">바로구매</a>
                 <a href="{{ url_for('auth.login', next=request.path) }}" class="btn-like-sm" title="로그인 후 추천">🤍 추천</a>
               {% endif %}
             </div>

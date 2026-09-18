@@ -13,6 +13,10 @@
 
     <div class="receipt-box">
       <div class="receipt-row">
+        <span>예약자 성함</span>
+        <span><strong>{{ order.customer_name }}</strong> {% if not order.user_id %}(비회원){% endif %}</span>
+      </div>
+      <div class="receipt-row">
         <span>결제 일시</span>
         <span>{{ order.payment.paid_at.strftime('%Y-%m-%d %H:%M:%S') }}</span>
       </div>
@@ -28,10 +32,17 @@
         <span>정상 상품 금액</span>
         <span>{{ "{:,}".format(order.original_amount) }}원</span>
       </div>
-      <div class="receipt-row discount">
-        <span>회원 혜택 절약 금액</span>
-        <span>- {{ "{:,}".format(order.discount_amount) }}원</span>
-      </div>
+      {% if order.discount_amount > 0 %}
+        <div class="receipt-row discount">
+          <span>회원 혜택 절약 금액</span>
+          <span>- {{ "{:,}".format(order.discount_amount) }}원</span>
+        </div>
+      {% else %}
+        <div class="receipt-row">
+          <span class="text-muted">적용 할인</span>
+          <span class="text-muted">0원 (비회원 구매)</span>
+        </div>
+      {% endif %}
       <div class="receipt-divider"></div>
       <div class="receipt-row total">
         <span>최종 결제 금액</span>
@@ -52,7 +63,11 @@
 
     <div class="complete-actions">
       <a href="{{ url_for('main.index') }}" class="btn-primary">홈으로 이동</a>
-      <a href="{{ url_for('order.history') }}" class="btn-outline">내 주문 내역 확인</a>
+      {% if current_user.is_authenticated %}
+        <a href="{{ url_for('order.history') }}" class="btn-outline">내 주문 내역 확인</a>
+      {% else %}
+        <a href="{{ url_for('auth.signup') }}" class="btn-outline">회원가입하고 다음 여행 할인받기</a>
+      {% endif %}
     </div>
   </div>
 </div>

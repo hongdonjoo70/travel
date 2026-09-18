@@ -92,6 +92,8 @@
                   <input type="hidden" name="quantity" value="1">
                   <button type="submit" class="btn-cart-sm" title="장바구니 담기">🛒</button>
                 </form>
+              {% else %}
+                <a href="{{ url_for('order.checkout', product_id=p.id, quantity=1) }}" class="btn-cart-sm" title="비회원 바로 구매">구매</a>
               {% endif %}
             </div>
           </div>

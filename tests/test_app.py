@@ -159,6 +159,41 @@ class TravelAppTestCase(unittest.TestCase):
         self.assertEqual(order.discount_amount, 20000)
         self.assertEqual(order.payment.paid_amount, 80000)
 
+    def test_guest_direct_checkout_and_payment(self):
+        """5-1. 비회원 바로 구매 및 결제 검증 (정가 적용 및 비회원 정보 저장)"""
+        # 1) 비회원으로 상품 상세 접속 시 비회원 바로 구매 버튼 확인
+        detail_res = self.client.get(f'/products/{self.p1.id}')
+        self.assertEqual(detail_res.status_code, 200)
+        self.assertIn('비회원 바로 구매하기', detail_res.get_data(as_text=True))
+
+        # 2) 비회원으로 결제 페이지 접근
+        checkout_res = self.client.get(f'/order/checkout?product_id={self.p1.id}&quantity=2')
+        self.assertEqual(checkout_res.status_code, 200)
+        checkout_html = checkout_res.get_data(as_text=True)
+        self.assertIn('비회원 주문', checkout_html)
+        self.assertIn('200,000원', checkout_html) # 정가 100,000 * 2 = 200,000원 (할인 없음)
+
+        # 3) 비회원 결제 요청
+        pay_res = self.client.post('/order/pay', data={
+            'direct_product_id': self.p1.id,
+            'quantity': 2,
+            'payment_method': 'CARD',
+            'guest_name': '비회원손님',
+            'guest_phone': '010-8888-9999',
+            'guest_email': 'guest@test.com'
+        }, follow_redirects=True)
+        self.assertEqual(pay_res.status_code, 200)
+
+        # 4) DB에서 비회원 주문 확인
+        guest_order = Order.query.filter_by(guest_name='비회원손님').first()
+        self.assertIsNotNone(guest_order)
+        self.assertIsNone(guest_order.user_id) # 비회원이므로 user_id는 None
+        self.assertEqual(guest_order.customer_name, '비회원손님')
+        self.assertEqual(guest_order.original_amount, 200000)
+        self.assertEqual(guest_order.discount_amount, 0) # 비회원은 정가
+        self.assertEqual(guest_order.final_amount, 200000)
+        self.assertEqual(guest_order.payment.paid_amount, 200000)
+
     def test_review_permission(self):
         """6. 후기 권한 테스트: 비회원은 읽기만, 회원은 작성 가능"""
         # 비회원 상세 조회 (200 OK)

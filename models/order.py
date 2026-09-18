@@ -7,7 +7,10 @@ class Order(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     order_no = db.Column(db.String(64), unique=True, nullable=False, index=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=True) # 비회원 구매 시 None
+    guest_name = db.Column(db.String(80), nullable=True)   # 비회원 구매자 이름
+    guest_email = db.Column(db.String(120), nullable=True) # 비회원 이메일
+    guest_phone = db.Column(db.String(30), nullable=True)  # 비회원 전화번호
     original_amount = db.Column(db.Integer, nullable=False)
     discount_amount = db.Column(db.Integer, default=0)
     final_amount = db.Column(db.Integer, nullable=False)
@@ -23,6 +26,18 @@ class Order(db.Model):
         now_str = datetime.now(timezone.utc).strftime('%Y%m%d%H%M%S')
         rand_str = uuid.uuid4().hex[:6].upper()
         return f"ORD-{now_str}-{rand_str}"
+
+    @property
+    def customer_name(self):
+        return self.user.name if self.user else (self.guest_name or '비회원 고객')
+
+    @property
+    def customer_email(self):
+        return self.user.email if self.user else (self.guest_email or '-')
+
+    @property
+    def customer_phone(self):
+        return self.user.phone if self.user else (self.guest_phone or '-')
 
     def __repr__(self):
         return f"<Order {self.order_no} ({self.final_amount}원)>"
