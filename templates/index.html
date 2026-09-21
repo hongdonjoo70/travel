@@ -79,23 +79,25 @@
       <div class="product-grid">
         {% for p in products %}
           <div class="product-card">
-            <div class="card-thumb-wrap">
-              <img src="{{ p.image_url }}" alt="{{ p.name }}" class="card-thumb" onerror="this.src='/static/img/default-tour.jpg'">
-              <span class="badge-region">{{ p.region }}</span>
-              <span class="badge-theme">{{ p.theme.name }}</span>
-              {% if p.get_image_list()|length > 1 %}
-                <span class="badge-photos">📷 {{ p.get_image_list()|length }}장</span>
-              {% endif %}
-            </div>
+            <a href="{{ url_for('product.detail', product_id=p.id) }}" class="card-thumb-link" title="{{ p.name }} 상세보기">
+              <div class="card-thumb-wrap">
+                <img src="{{ p.image_url }}" alt="{{ p.name }}" class="card-thumb" onerror="this.src='/static/img/default-tour.jpg'">
+                <span class="badge-region">{{ p.region }}</span>
+                <span class="badge-theme">{{ p.theme.name }}</span>
+                {% if p.get_image_list()|length > 1 %}
+                  <span class="badge-photos">📷 {{ p.get_image_list()|length }}장</span>
+                {% endif %}
+              </div>
+            </a>
             <div class="card-body">
               <div class="card-meta">
                 <span class="like-stat">❤️ {{ p.recommendation_count }}</span>
                 <span class="rating-stat">⭐ {{ p.get_average_rating() }} ({{ p.reviews.count() }})</span>
               </div>
-              <h3 class="card-title">
-                <a href="{{ url_for('product.detail', product_id=p.id) }}">{{ p.name }}</a>
-              </h3>
-              <p class="card-desc">{{ p.description[:60] }}...</p>
+              <a href="{{ url_for('product.detail', product_id=p.id) }}" class="card-text-link" title="{{ p.name }} 상세보기">
+                <h3 class="card-title">{{ p.name }}</h3>
+                <p class="card-desc">{{ p.description[:60] }}...</p>
+              </a>
               
               <div class="pricing-box">
                 <span class="original-price">{{ "{:,}".format(p.original_price) }}원</span>

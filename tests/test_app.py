@@ -96,6 +96,11 @@ class TravelAppTestCase(unittest.TestCase):
         res_theme = self.client.get('/?theme=EXPERIENCE')
         self.assertIn('강원 루지 체험', res_theme.get_data(as_text=True))
 
+        # 상품 카드 그림(썸네일) 및 문자(제목/설명) 클릭 상세 진입 링크 검증
+        html_main = res.get_data(as_text=True)
+        self.assertIn('card-thumb-link', html_main)
+        self.assertIn('card-text-link', html_main)
+
     def test_popular_ranking_screen(self):
         """3. 추천 수가 높은 관광상품 랭킹 화면 테스트"""
         res = self.client.get('/products/popular')
@@ -105,6 +110,9 @@ class TravelAppTestCase(unittest.TestCase):
         pos_p2 = text.find('강원 루지 체험')
         pos_p1 = text.find('제주 힐링 투어')
         self.assertTrue(pos_p2 < pos_p1, "추천 수가 높은 상품이 먼저 나와야 합니다.")
+        # 랭킹 카드 그림 및 문자 상세 링크 검증
+        self.assertIn('rank-thumb-link', text)
+        self.assertIn('rank-text-link', text)
 
     def test_cart_and_member_discount(self):
         """4. 장바구니 및 회원 할인 계산 테스트"""

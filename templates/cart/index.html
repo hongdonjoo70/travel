@@ -25,7 +25,9 @@
           {% for item in cart.items %}
             <div class="cart-item-row">
               <div class="col-info item-info-cell">
-                <img src="{{ item.product.image_url }}" alt="{{ item.product.name }}" class="cart-item-thumb" onerror="this.src='/static/img/default-tour.jpg'">
+                <a href="{{ url_for('product.detail', product_id=item.product.id) }}" class="cart-thumb-link" title="{{ item.product.name }} 상세보기">
+                  <img src="{{ item.product.image_url }}" alt="{{ item.product.name }}" class="cart-item-thumb" onerror="this.src='/static/img/default-tour.jpg'">
+                </a>
                 <div class="item-text">
                   <span class="item-tags">[{{ item.product.region }} · {{ item.product.theme.name }}]</span>
                   <a href="{{ url_for('product.detail', product_id=item.product.id) }}" class="item-title">
